@@ -10,8 +10,44 @@
 </head>
 <body>
 
+<!-- ===================== TELA: LOGIN / CADASTRO ===================== -->
+<section id="tela-auth" class="tela-auth">
+  <div class="auth-cartao">
+    <p class="auth-marca">Combinado</p>
+    <h1 id="auth-titulo">Entrar</h1>
+
+    <form id="form-auth">
+      <div class="campo">
+        <label for="input-usuario-auth">Usuário</label>
+        <input type="text" id="input-usuario-auth" placeholder="Ex.: miguel" required />
+      </div>
+
+      <div class="campo">
+        <label for="input-senha-auth">Senha</label>
+        <input type="password" id="input-senha-auth" required />
+      </div>
+
+      <p id="auth-erro" class="auth-erro" hidden></p>
+
+      <button type="submit" class="botao botao-primario auth-botao-principal" id="btn-auth-principal">Entrar</button>
+    </form>
+
+    <p class="auth-alternar">
+      <span id="auth-alternar-texto">Não tem conta?</span>
+      <button type="button" id="btn-auth-alternar" class="botao botao-texto">Criar conta</button>
+    </p>
+  </div>
+</section>
+
+<!-- ===================== APP PRINCIPAL ===================== -->
+<div id="app-principal" hidden>
+
 <header class="cabecalho">
   <span class="cabecalho-marca">Combinado</span>
+  <div class="cabecalho-usuario">
+    <span id="cabecalho-usuario-nome"></span>
+    <button type="button" id="btn-sair" class="botao botao-texto botao-sair">Sair</button>
+  </div>
 </header>
 
 <main class="conteudo">
@@ -32,7 +68,7 @@
 <!-- ===================== DIÁLOGO: NOVO TRABALHO ===================== -->
 <dialog id="dialog-trabalho">
   <form id="form-trabalho" method="dialog">
-    <h2>Novo trabalho</h2>
+    <h2 id="dialog-trabalho-titulo">Novo trabalho</h2>
 
     <div class="campo">
       <label for="input-titulo-trabalho">Título</label>
@@ -79,6 +115,9 @@
     </div>
   </div>
 </dialog>
+
+</div>
+<!-- fim #app-principal -->
 
 <script src="js/app.js"></script>
 </body>

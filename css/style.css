@@ -33,9 +33,73 @@ button, input, select, textarea { font: inherit; color: inherit; }
   background: var(--cor-marca);
   color: var(--cor-marca-contraste);
   padding: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
 }
 
 .cabecalho-marca { font-weight: 700; font-size: 18px; }
+
+.cabecalho-usuario {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  opacity: 0.9;
+}
+
+.cabecalho-usuario .botao-sair {
+  color: var(--cor-marca-contraste);
+  text-decoration: underline;
+  min-height: auto;
+  padding: 4px 2px;
+  font-size: 13px;
+}
+
+/* ---------- Tela de login / cadastro ---------- */
+.tela-auth {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: var(--cor-marca);
+}
+
+.auth-cartao {
+  width: 100%;
+  max-width: 360px;
+  background: var(--cor-cartao);
+  border-radius: var(--raio);
+  padding: 28px 24px;
+}
+
+.auth-marca {
+  margin: 0 0 4px;
+  font-weight: 700;
+  color: var(--cor-marca);
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.auth-cartao h1 { margin: 0 0 18px; font-size: 22px; }
+
+.auth-botao-principal { width: 100%; }
+
+.auth-erro {
+  color: var(--cor-perigo);
+  font-size: 13px;
+  margin: -8px 0 14px;
+}
+
+.auth-alternar {
+  text-align: center;
+  font-size: 13px;
+  color: var(--cor-texto-suave);
+  margin: 18px 0 0;
+}
 
 .conteudo { padding: 16px; max-width: 640px; margin: 0 auto; }
 

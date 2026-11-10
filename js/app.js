@@ -5,7 +5,157 @@
 (function () {
   "use strict";
 
-  var CHAVE_ARMAZENAMENTO = "trabalhos:v1";
+  var CHAVE_USUARIOS = "combinado:usuarios:v1";
+  var CHAVE_SESSAO = "combinado:sessao:v1";
+  var CHAVE_ARMAZENAMENTO_BASE = "trabalhos:v1";
+
+  var usuarioAtual = null;
+
+  /* ---------------- contas (cadastro/login) ---------------- */
+
+  function carregarUsuarios() {
+    try {
+      var bruto = localStorage.getItem(CHAVE_USUARIOS);
+      if (!bruto) return {};
+      var salvo = JSON.parse(bruto);
+      return (salvo && typeof salvo === "object") ? salvo : {};
+    } catch (erro) {
+      return {};
+    }
+  }
+
+  function salvarUsuarios(usuarios) {
+    try {
+      localStorage.setItem(CHAVE_USUARIOS, JSON.stringify(usuarios));
+    } catch (erro) {
+      // localStorage indisponível — segue só em memória
+    }
+  }
+
+  function salvarSessao(usuario) {
+    try {
+      localStorage.setItem(CHAVE_SESSAO, usuario);
+    } catch (erro) {
+      // ignora
+    }
+  }
+
+  function carregarSessao() {
+    try {
+      return localStorage.getItem(CHAVE_SESSAO) || "";
+    } catch (erro) {
+      return "";
+    }
+  }
+
+  function limparSessao() {
+    try {
+      localStorage.removeItem(CHAVE_SESSAO);
+    } catch (erro) {
+      // ignora
+    }
+  }
+
+  var telaAuth = document.getElementById("tela-auth");
+  var appPrincipal = document.getElementById("app-principal");
+  var formAuth = document.getElementById("form-auth");
+  var inputUsuarioAuth = document.getElementById("input-usuario-auth");
+  var inputSenhaAuth = document.getElementById("input-senha-auth");
+  var authErro = document.getElementById("auth-erro");
+  var authTitulo = document.getElementById("auth-titulo");
+  var btnAuthPrincipal = document.getElementById("btn-auth-principal");
+  var btnAuthAlternar = document.getElementById("btn-auth-alternar");
+  var authAlternarTexto = document.getElementById("auth-alternar-texto");
+  var cabecalhoUsuarioNome = document.getElementById("cabecalho-usuario-nome");
+  var btnSair = document.getElementById("btn-sair");
+
+  var modoCadastro = false;
+
+  function mostrarErroAuth(mensagem) {
+    authErro.textContent = mensagem;
+    authErro.hidden = false;
+  }
+
+  function limparErroAuth() {
+    authErro.hidden = true;
+    authErro.textContent = "";
+  }
+
+  function alternarModoAuth() {
+    modoCadastro = !modoCadastro;
+    limparErroAuth();
+    if (modoCadastro) {
+      authTitulo.textContent = "Criar conta";
+      btnAuthPrincipal.textContent = "Criar conta";
+      authAlternarTexto.textContent = "Já tem conta?";
+      btnAuthAlternar.textContent = "Entrar";
+    } else {
+      authTitulo.textContent = "Entrar";
+      btnAuthPrincipal.textContent = "Entrar";
+      authAlternarTexto.textContent = "Não tem conta?";
+      btnAuthAlternar.textContent = "Criar conta";
+    }
+  }
+
+  btnAuthAlternar.addEventListener("click", alternarModoAuth);
+
+  formAuth.addEventListener("submit", function (evento) {
+    evento.preventDefault();
+    limparErroAuth();
+
+    var usuario = inputUsuarioAuth.value.trim();
+    var senha = inputSenhaAuth.value;
+    if (!usuario || !senha) return;
+
+    var usuarios = carregarUsuarios();
+
+    if (modoCadastro) {
+      if (usuarios[usuario]) {
+        mostrarErroAuth("Esse usuário já existe. Tente entrar.");
+        return;
+      }
+      usuarios[usuario] = { senha: senha };
+      salvarUsuarios(usuarios);
+      entrarComoUsuario(usuario);
+    } else {
+      var conta = usuarios[usuario];
+      if (!conta || conta.senha !== senha) {
+        mostrarErroAuth("Usuário ou senha incorretos.");
+        return;
+      }
+      entrarComoUsuario(usuario);
+    }
+  });
+
+  function entrarComoUsuario(usuario) {
+    usuarioAtual = usuario;
+    salvarSessao(usuario);
+    CHAVE_ARMAZENAMENTO = CHAVE_ARMAZENAMENTO_BASE + ":" + usuario;
+    formAuth.reset();
+    telaAuth.hidden = true;
+    appPrincipal.hidden = false;
+    cabecalhoUsuarioNome.textContent = usuario;
+    state.trabalhos = [];
+    carregarEstado();
+    renderTrabalhos();
+  }
+
+  btnSair.addEventListener("click", function () {
+    limparSessao();
+    usuarioAtual = null;
+    state.trabalhos = [];
+    appPrincipal.hidden = true;
+    telaAuth.hidden = false;
+    modoCadastro = false;
+    authTitulo.textContent = "Entrar";
+    btnAuthPrincipal.textContent = "Entrar";
+    authAlternarTexto.textContent = "Não tem conta?";
+    btnAuthAlternar.textContent = "Criar conta";
+    limparErroAuth();
+    inputUsuarioAuth.focus();
+  });
+
+  var CHAVE_ARMAZENAMENTO = CHAVE_ARMAZENAMENTO_BASE;
 
   var STATUS_LABEL = {
     "nao-comecei": "Não comecei",
@@ -61,10 +211,13 @@
   var btnNovoTrabalho = document.getElementById("btn-novo-trabalho");
 
   var dialogTrabalho = document.getElementById("dialog-trabalho");
+  var dialogTrabalhoTitulo = document.getElementById("dialog-trabalho-titulo");
   var formTrabalho = document.getElementById("form-trabalho");
   var inputTitulo = document.getElementById("input-titulo-trabalho");
   var inputMateria = document.getElementById("input-materia-trabalho");
   var inputPrazo = document.getElementById("input-prazo-trabalho");
+
+  var trabalhoEmEdicao = null;
 
   var dialogConfirmar = document.getElementById("dialog-confirmar");
   var dialogConfirmarTexto = document.getElementById("dialog-confirmar-texto");
@@ -82,7 +235,21 @@
   /* ---------------- diálogo de novo trabalho ---------------- */
 
   function abrirDialogNovoTrabalho() {
+    trabalhoEmEdicao = null;
+    dialogTrabalhoTitulo.textContent = "Novo trabalho";
     formTrabalho.reset();
+    dialogTrabalho.showModal();
+    inputTitulo.focus();
+  }
+
+  function abrirDialogEditarTrabalho(trabalho) {
+    trabalhoEmEdicao = trabalho;
+    dialogTrabalhoTitulo.textContent = "Editar trabalho";
+    inputTitulo.value = trabalho.titulo;
+    inputMateria.value = trabalho.materia;
+    inputPrazo.value = trabalho.prazo || "";
+    var radioTipo = formTrabalho.querySelector('input[name="tipo-trabalho"][value="' + trabalho.tipo + '"]');
+    if (radioTipo) radioTipo.checked = true;
     dialogTrabalho.showModal();
     inputTitulo.focus();
   }
@@ -109,14 +276,22 @@
 
     var tipoSelecionado = formTrabalho.querySelector('input[name="tipo-trabalho"]:checked');
 
-    state.trabalhos.push({
-      id: gerarId(),
-      titulo: titulo,
-      materia: materia,
-      prazo: inputPrazo.value || "",
-      tipo: tipoSelecionado ? tipoSelecionado.value : "individual",
-      status: "nao-comecei"
-    });
+    if (trabalhoEmEdicao) {
+      trabalhoEmEdicao.titulo = titulo;
+      trabalhoEmEdicao.materia = materia;
+      trabalhoEmEdicao.prazo = inputPrazo.value || "";
+      trabalhoEmEdicao.tipo = tipoSelecionado ? tipoSelecionado.value : "individual";
+      trabalhoEmEdicao = null;
+    } else {
+      state.trabalhos.push({
+        id: gerarId(),
+        titulo: titulo,
+        materia: materia,
+        prazo: inputPrazo.value || "",
+        tipo: tipoSelecionado ? tipoSelecionado.value : "individual",
+        status: "nao-comecei"
+      });
+    }
 
     salvarEstado();
     dialogTrabalho.close();
@@ -188,6 +363,15 @@
       });
       acoes.appendChild(selectStatus);
 
+      var botaoEditar = document.createElement("button");
+      botaoEditar.type = "button";
+      botaoEditar.className = "botao botao-texto";
+      botaoEditar.textContent = "Editar";
+      botaoEditar.addEventListener("click", function () {
+        abrirDialogEditarTrabalho(trabalho);
+      });
+      acoes.appendChild(botaoEditar);
+
       var botaoExcluir = document.createElement("button");
       botaoExcluir.type = "button";
       botaoExcluir.className = "botao botao-texto";
@@ -204,6 +388,12 @@
 
   /* ---------------- inicialização ---------------- */
 
-  carregarEstado();
-  renderTrabalhos();
+  var sessaoSalva = carregarSessao();
+  if (sessaoSalva && carregarUsuarios()[sessaoSalva]) {
+    entrarComoUsuario(sessaoSalva);
+  } else {
+    telaAuth.hidden = false;
+    appPrincipal.hidden = true;
+    inputUsuarioAuth.focus();
+  }
 })();
