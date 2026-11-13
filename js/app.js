@@ -289,7 +289,8 @@
         materia: materia,
         prazo: inputPrazo.value || "",
         tipo: tipoSelecionado ? tipoSelecionado.value : "individual",
-        status: "nao-comecei"
+        status: "nao-comecei",
+        tarefas: []
       });
     }
 
@@ -363,6 +364,19 @@
       });
       acoes.appendChild(selectStatus);
 
+      if (trabalho.tipo === "grupo") {
+        var tarefasDoTrabalho = Array.isArray(trabalho.tarefas) ? trabalho.tarefas : [];
+        var tarefasFeitas = tarefasDoTrabalho.filter(function (t) { return t.feito; }).length;
+        var botaoTarefas = document.createElement("button");
+        botaoTarefas.type = "button";
+        botaoTarefas.className = "botao botao-texto";
+        botaoTarefas.textContent = "Tarefas (" + tarefasFeitas + "/" + tarefasDoTrabalho.length + ")";
+        botaoTarefas.addEventListener("click", function () {
+          abrirDialogTarefas(trabalho);
+        });
+        acoes.appendChild(botaoTarefas);
+      }
+
       var botaoEditar = document.createElement("button");
       botaoEditar.type = "button";
       botaoEditar.className = "botao botao-texto";
@@ -385,6 +399,118 @@
       listaTrabalhos.appendChild(item);
     });
   }
+
+  /* ---------------- tarefas (divisão em trabalhos de grupo) ---------------- */
+
+  var dialogTarefas = document.getElementById("dialog-tarefas");
+  var dialogTarefasTitulo = document.getElementById("dialog-tarefas-titulo");
+  var formTarefa = document.getElementById("form-tarefa");
+  var inputTarefaTexto = document.getElementById("input-tarefa-texto");
+  var inputTarefaResponsavel = document.getElementById("input-tarefa-responsavel");
+  var listaTarefas = document.getElementById("lista-tarefas");
+  var tarefasVazio = document.getElementById("tarefas-vazio");
+
+  var trabalhoTarefasAtual = null;
+
+  function abrirDialogTarefas(trabalho) {
+    trabalhoTarefasAtual = trabalho;
+    if (!Array.isArray(trabalho.tarefas)) trabalho.tarefas = [];
+    dialogTarefasTitulo.textContent = "Tarefas de " + trabalho.titulo;
+    formTarefa.reset();
+    renderTarefas();
+    dialogTarefas.showModal();
+    inputTarefaTexto.focus();
+  }
+
+  function renderTarefas() {
+    if (!trabalhoTarefasAtual) return;
+    var tarefas = trabalhoTarefasAtual.tarefas || [];
+    listaTarefas.innerHTML = "";
+    tarefasVazio.hidden = tarefas.length !== 0;
+
+    tarefas.forEach(function (tarefa) {
+      var item = document.createElement("li");
+      item.className = "tarefa-item" + (tarefa.feito ? " tarefa-feita" : "");
+
+      var rotulo = document.createElement("label");
+      rotulo.className = "tarefa-checkbox";
+
+      var checkbox = document.createElement("input");
+      checkbox.type = "checkbox";
+      checkbox.checked = !!tarefa.feito;
+      checkbox.setAttribute("aria-label", "Marcar '" + tarefa.texto + "' como concluída");
+      checkbox.addEventListener("change", function () {
+        tarefa.feito = checkbox.checked;
+        salvarEstado();
+        renderTarefas();
+        renderTrabalhos();
+      });
+      rotulo.appendChild(checkbox);
+
+      var textoSpan = document.createElement("span");
+      textoSpan.className = "tarefa-texto";
+      textoSpan.textContent = tarefa.texto;
+      rotulo.appendChild(textoSpan);
+
+      item.appendChild(rotulo);
+
+      if (tarefa.responsavel) {
+        var responsavelSpan = document.createElement("span");
+        responsavelSpan.className = "tarefa-responsavel";
+        responsavelSpan.textContent = tarefa.responsavel;
+        item.appendChild(responsavelSpan);
+      }
+
+      var botaoExcluirTarefa = document.createElement("button");
+      botaoExcluirTarefa.type = "button";
+      botaoExcluirTarefa.className = "botao botao-texto tarefa-excluir";
+      botaoExcluirTarefa.textContent = "Excluir";
+      botaoExcluirTarefa.addEventListener("click", function () {
+        trabalhoTarefasAtual.tarefas = trabalhoTarefasAtual.tarefas.filter(function (t) {
+          return t.id !== tarefa.id;
+        });
+        salvarEstado();
+        renderTarefas();
+        renderTrabalhos();
+      });
+      item.appendChild(botaoExcluirTarefa);
+
+      listaTarefas.appendChild(item);
+    });
+  }
+
+  formTarefa.addEventListener("submit", function (evento) {
+    evento.preventDefault();
+    if (!trabalhoTarefasAtual) return;
+
+    var texto = inputTarefaTexto.value.trim();
+    if (!texto) return;
+    var responsavel = inputTarefaResponsavel.value.trim();
+
+    if (!Array.isArray(trabalhoTarefasAtual.tarefas)) trabalhoTarefasAtual.tarefas = [];
+    trabalhoTarefasAtual.tarefas.push({
+      id: gerarId(),
+      texto: texto,
+      responsavel: responsavel,
+      feito: false
+    });
+
+    salvarEstado();
+    formTarefa.reset();
+    renderTarefas();
+    renderTrabalhos();
+    inputTarefaTexto.focus();
+  });
+
+  document.querySelectorAll("[data-fechar-tarefas]").forEach(function (botao) {
+    botao.addEventListener("click", function () {
+      dialogTarefas.close();
+    });
+  });
+
+  dialogTarefas.addEventListener("close", function () {
+    trabalhoTarefasAtual = null;
+  });
 
   /* ---------------- inicialização ---------------- */
 

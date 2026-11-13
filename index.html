@@ -104,6 +104,33 @@
   </form>
 </dialog>
 
+<!-- ===================== DIÁLOGO: TAREFAS DO GRUPO ===================== -->
+<dialog id="dialog-tarefas">
+  <div class="dialog-tarefas-corpo">
+    <h2 id="dialog-tarefas-titulo">Tarefas</h2>
+
+    <form id="form-tarefa" class="form-tarefa">
+      <div class="campo campo-tarefa">
+        <label for="input-tarefa-texto">Tarefa</label>
+        <input type="text" id="input-tarefa-texto" placeholder="Ex.: Fazer a introdução" required />
+      </div>
+      <div class="campo campo-tarefa">
+        <label for="input-tarefa-responsavel">Responsável</label>
+        <input type="text" id="input-tarefa-responsavel" placeholder="Ex.: Samuel" />
+      </div>
+      <button type="submit" class="botao botao-primario">+ Adicionar</button>
+    </form>
+
+    <p id="tarefas-vazio" class="estado-vazio" hidden>Nenhuma tarefa ainda. Adicione a primeira acima.</p>
+
+    <ul id="lista-tarefas" class="lista-tarefas"></ul>
+
+    <div class="dialog-acoes">
+      <button type="button" class="botao botao-texto" data-fechar-tarefas>Fechar</button>
+    </div>
+  </div>
+</dialog>
+
 <!-- ===================== DIÁLOGO: CONFIRMAÇÃO DE EXCLUSÃO ===================== -->
 <dialog id="dialog-confirmar">
   <div class="dialog-confirmar-corpo">
