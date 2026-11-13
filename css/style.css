@@ -113,6 +113,32 @@ button, input, select, textarea { font: inherit; color: inherit; }
 
 .conteudo-cabecalho h1 { margin: 0; font-size: 20px; }
 
+/* ---------- Barra de ordenar/filtrar ---------- */
+.filtros-barra {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 16px 0;
+}
+
+.campo-filtro { flex: 1 1 140px; }
+
+.campo-filtro label {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--cor-texto-suave);
+}
+
+.campo-filtro select {
+  width: 100%;
+  padding: 9px 10px;
+  border: 1px solid var(--cor-borda);
+  border-radius: 8px;
+  background: var(--cor-cartao);
+}
+
 .estado-vazio {
   color: var(--cor-texto-suave);
   text-align: center;

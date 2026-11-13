@@ -209,6 +209,25 @@
   var listaTrabalhos = document.getElementById("lista-trabalhos");
   var listaVazia = document.getElementById("lista-vazia");
   var btnNovoTrabalho = document.getElementById("btn-novo-trabalho");
+  var filtrosBarra = document.getElementById("filtros-barra");
+  var selectOrdenar = document.getElementById("select-ordenar");
+  var selectFiltroMateria = document.getElementById("select-filtro-materia");
+
+  var TEXTO_LISTA_VAZIA = 'Nenhum trabalho cadastrado ainda. Toque em "Novo trabalho" para começar.';
+  var TEXTO_LISTA_SEM_RESULTADO = "Nenhum trabalho encontrado com esse filtro.";
+
+  var ordenacaoAtual = "prazo";
+  var filtroMateriaAtual = "";
+
+  selectOrdenar.addEventListener("change", function () {
+    ordenacaoAtual = selectOrdenar.value;
+    renderTrabalhos();
+  });
+
+  selectFiltroMateria.addEventListener("change", function () {
+    filtroMateriaAtual = selectFiltroMateria.value;
+    renderTrabalhos();
+  });
 
   var dialogTrabalho = document.getElementById("dialog-trabalho");
   var dialogTrabalhoTitulo = document.getElementById("dialog-trabalho-titulo");
@@ -314,16 +333,89 @@
     dialogConfirmar.showModal();
   }
 
+  function obterMateriasUnicas() {
+    var vistas = {};
+    var materias = [];
+    state.trabalhos.forEach(function (t) {
+      if (t.materia && !vistas[t.materia]) {
+        vistas[t.materia] = true;
+        materias.push(t.materia);
+      }
+    });
+    materias.sort(function (a, b) { return a.localeCompare(b, "pt-BR"); });
+    return materias;
+  }
+
+  function atualizarSelectFiltroMateria() {
+    var valorAtual = selectFiltroMateria.value;
+    var materias = obterMateriasUnicas();
+
+    selectFiltroMateria.innerHTML = "";
+    var opcaoTodas = document.createElement("option");
+    opcaoTodas.value = "";
+    opcaoTodas.textContent = "Todas as matérias";
+    selectFiltroMateria.appendChild(opcaoTodas);
+
+    materias.forEach(function (materia) {
+      var opcao = document.createElement("option");
+      opcao.value = materia;
+      opcao.textContent = materia;
+      selectFiltroMateria.appendChild(opcao);
+    });
+
+    if (materias.indexOf(valorAtual) !== -1) {
+      selectFiltroMateria.value = valorAtual;
+    } else {
+      selectFiltroMateria.value = "";
+      filtroMateriaAtual = "";
+    }
+  }
+
+  function compararPorPrazo(a, b) {
+    if (!a.prazo && !b.prazo) return 0;
+    if (!a.prazo) return 1;
+    if (!b.prazo) return -1;
+    return a.prazo < b.prazo ? -1 : (a.prazo > b.prazo ? 1 : 0);
+  }
+
+  function ordenarEFiltrar(lista) {
+    var filtrados = lista.filter(function (t) {
+      return !filtroMateriaAtual || t.materia === filtroMateriaAtual;
+    });
+
+    if (ordenacaoAtual === "titulo") {
+      filtrados.sort(function (a, b) { return a.titulo.localeCompare(b.titulo, "pt-BR"); });
+    } else if (ordenacaoAtual === "recentes") {
+      filtrados.reverse();
+    } else {
+      filtrados.sort(compararPorPrazo);
+    }
+
+    return filtrados;
+  }
+
   function renderTrabalhos() {
+    atualizarSelectFiltroMateria();
+    filtrosBarra.hidden = state.trabalhos.length === 0;
+
     listaTrabalhos.innerHTML = "";
 
     if (state.trabalhos.length === 0) {
+      listaVazia.textContent = TEXTO_LISTA_VAZIA;
+      listaVazia.hidden = false;
+      return;
+    }
+
+    var visiveis = ordenarEFiltrar(state.trabalhos.slice());
+
+    if (visiveis.length === 0) {
+      listaVazia.textContent = TEXTO_LISTA_SEM_RESULTADO;
       listaVazia.hidden = false;
       return;
     }
     listaVazia.hidden = true;
 
-    state.trabalhos.forEach(function (trabalho) {
+    visiveis.forEach(function (trabalho) {
       var item = document.createElement("li");
       item.className = "trabalho-card";
       item.setAttribute("data-status", trabalho.status);

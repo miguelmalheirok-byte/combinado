@@ -57,6 +57,23 @@
     <button type="button" id="btn-novo-trabalho" class="botao botao-primario">+ Novo trabalho</button>
   </div>
 
+  <div id="filtros-barra" class="filtros-barra" hidden>
+    <div class="campo-filtro">
+      <label for="select-ordenar">Ordenar por</label>
+      <select id="select-ordenar">
+        <option value="prazo">Prazo mais próximo</option>
+        <option value="titulo">Título (A-Z)</option>
+        <option value="recentes">Mais recentes</option>
+      </select>
+    </div>
+    <div class="campo-filtro">
+      <label for="select-filtro-materia">Matéria</label>
+      <select id="select-filtro-materia">
+        <option value="">Todas as matérias</option>
+      </select>
+    </div>
+  </div>
+
   <p id="lista-vazia" class="estado-vazio" hidden>
     Nenhum trabalho cadastrado ainda. Toque em "Novo trabalho" para começar.
   </p>
