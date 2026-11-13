@@ -290,7 +290,8 @@
         prazo: inputPrazo.value || "",
         tipo: tipoSelecionado ? tipoSelecionado.value : "individual",
         status: "nao-comecei",
-        tarefas: []
+        tarefas: [],
+        integrantes: []
       });
     }
 
@@ -410,17 +411,108 @@
   var listaTarefas = document.getElementById("lista-tarefas");
   var tarefasVazio = document.getElementById("tarefas-vazio");
 
+  var formIntegrante = document.getElementById("form-integrante");
+  var inputIntegranteNome = document.getElementById("input-integrante-nome");
+  var listaIntegrantes = document.getElementById("lista-integrantes");
+  var integrantesVazio = document.getElementById("integrantes-vazio");
+
   var trabalhoTarefasAtual = null;
 
   function abrirDialogTarefas(trabalho) {
     trabalhoTarefasAtual = trabalho;
     if (!Array.isArray(trabalho.tarefas)) trabalho.tarefas = [];
+    if (!Array.isArray(trabalho.integrantes)) trabalho.integrantes = [];
     dialogTarefasTitulo.textContent = "Tarefas de " + trabalho.titulo;
     formTarefa.reset();
+    formIntegrante.reset();
+    renderIntegrantes();
     renderTarefas();
     dialogTarefas.showModal();
-    inputTarefaTexto.focus();
+    inputIntegranteNome.focus();
   }
+
+  /* ---------------- integrantes do grupo ---------------- */
+
+  function renderSelectResponsavel() {
+    var selecionadoAntes = inputTarefaResponsavel.value;
+    var integrantes = (trabalhoTarefasAtual && trabalhoTarefasAtual.integrantes) || [];
+
+    inputTarefaResponsavel.innerHTML = "";
+
+    var opcaoVazia = document.createElement("option");
+    opcaoVazia.value = "";
+    opcaoVazia.textContent = "Sem responsável";
+    inputTarefaResponsavel.appendChild(opcaoVazia);
+
+    integrantes.forEach(function (nome) {
+      var opcao = document.createElement("option");
+      opcao.value = nome;
+      opcao.textContent = nome;
+      inputTarefaResponsavel.appendChild(opcao);
+    });
+
+    if (integrantes.indexOf(selecionadoAntes) !== -1) {
+      inputTarefaResponsavel.value = selecionadoAntes;
+    }
+  }
+
+  function renderIntegrantes() {
+    if (!trabalhoTarefasAtual) return;
+    var integrantes = trabalhoTarefasAtual.integrantes || [];
+    listaIntegrantes.innerHTML = "";
+    integrantesVazio.hidden = integrantes.length !== 0;
+
+    integrantes.forEach(function (nome) {
+      var chip = document.createElement("li");
+      chip.className = "integrante-chip";
+
+      var nomeSpan = document.createElement("span");
+      nomeSpan.textContent = nome;
+      chip.appendChild(nomeSpan);
+
+      var botaoRemover = document.createElement("button");
+      botaoRemover.type = "button";
+      botaoRemover.textContent = "×";
+      botaoRemover.setAttribute("aria-label", "Remover " + nome + " do grupo");
+      botaoRemover.addEventListener("click", function () {
+        trabalhoTarefasAtual.integrantes = trabalhoTarefasAtual.integrantes.filter(function (n) {
+          return n !== nome;
+        });
+        salvarEstado();
+        renderIntegrantes();
+        renderSelectResponsavel();
+      });
+      chip.appendChild(botaoRemover);
+
+      listaIntegrantes.appendChild(chip);
+    });
+
+    renderSelectResponsavel();
+  }
+
+  formIntegrante.addEventListener("submit", function (evento) {
+    evento.preventDefault();
+    if (!trabalhoTarefasAtual) return;
+
+    var nome = inputIntegranteNome.value.trim();
+    if (!nome) return;
+
+    if (!Array.isArray(trabalhoTarefasAtual.integrantes)) trabalhoTarefasAtual.integrantes = [];
+    var jaExiste = trabalhoTarefasAtual.integrantes.some(function (n) {
+      return n.toLowerCase() === nome.toLowerCase();
+    });
+    if (jaExiste) {
+      inputIntegranteNome.value = "";
+      inputIntegranteNome.focus();
+      return;
+    }
+
+    trabalhoTarefasAtual.integrantes.push(nome);
+    salvarEstado();
+    formIntegrante.reset();
+    renderIntegrantes();
+    inputIntegranteNome.focus();
+  });
 
   function renderTarefas() {
     if (!trabalhoTarefasAtual) return;

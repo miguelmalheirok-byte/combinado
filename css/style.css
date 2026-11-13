@@ -234,6 +234,78 @@ dialog::backdrop { background: rgba(0,0,0,0.4); }
 .dialog-tarefas-corpo { max-height: 70vh; overflow: auto; }
 .dialog-tarefas-corpo h2 { margin-top: 0; }
 
+.rotulo-oculto {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* ---------- Integrantes do grupo ---------- */
+.integrantes-secao {
+  border-bottom: 1px solid var(--cor-borda);
+  padding-bottom: 16px;
+  margin-bottom: 16px;
+}
+
+.integrantes-titulo {
+  margin: 0 0 10px;
+  font-size: 14px;
+  color: var(--cor-texto-suave);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.form-integrante {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.form-integrante .campo-integrante { flex: 1 1 auto; margin-bottom: 0; }
+.form-integrante .botao { flex: 0 0 auto; }
+
+.integrantes-vazio {
+  color: var(--cor-texto-suave);
+  font-size: 13px;
+  margin: 0 0 4px;
+}
+
+.lista-integrantes {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.integrante-chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--cor-fundo);
+  border: 1px solid var(--cor-borda);
+  border-radius: 999px;
+  padding: 4px 6px 4px 12px;
+  font-size: 13px;
+}
+
+.integrante-chip button {
+  background: transparent;
+  border: none;
+  color: var(--cor-texto-suave);
+  font-weight: 700;
+  cursor: pointer;
+  padding: 2px 6px;
+  line-height: 1;
+  border-radius: 999px;
+}
+
+.integrante-chip button:hover { color: var(--cor-perigo); }
+
 .form-tarefa {
   display: flex;
   flex-wrap: wrap;

@@ -10,7 +10,7 @@ Trabalhos de várias matérias, individuais e em grupo, acontecem ao mesmo tempo
 
 ## O que já tem
 
-O app já permite criar uma conta e fazer login, com cada usuário vendo só os próprios trabalhos. Dá para cadastrar um trabalho com título, matéria, prazo e tipo (individual ou em grupo), editar depois de criado, acompanhar o status (não comecei, fazendo, entregue) e excluir com confirmação. Nos trabalhos em grupo também dá para dividir as tarefas entre os integrantes, marcando um responsável por cada uma e acompanhando quantas já foram concluídas.
+O app já permite criar uma conta e fazer login, com cada usuário vendo só os próprios trabalhos. Dá para cadastrar um trabalho com título, matéria, prazo e tipo (individual ou em grupo), editar depois de criado, acompanhar o status (não comecei, fazendo, entregue) e excluir com confirmação. Nos trabalhos em grupo também dá para cadastrar os integrantes do grupo e dividir as tarefas entre eles, escolhendo o responsável de cada uma numa lista e acompanhando quantas já foram concluídas.
 
 ## O que vem por aí
 

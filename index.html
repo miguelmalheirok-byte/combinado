@@ -109,6 +109,19 @@
   <div class="dialog-tarefas-corpo">
     <h2 id="dialog-tarefas-titulo">Tarefas</h2>
 
+    <div class="integrantes-secao">
+      <h3 class="integrantes-titulo">Integrantes do grupo</h3>
+      <form id="form-integrante" class="form-integrante">
+        <div class="campo campo-integrante">
+          <label for="input-integrante-nome" class="rotulo-oculto">Nome do integrante</label>
+          <input type="text" id="input-integrante-nome" placeholder="Nome do integrante" />
+        </div>
+        <button type="submit" class="botao botao-texto">+ Adicionar</button>
+      </form>
+      <p id="integrantes-vazio" class="integrantes-vazio" hidden>Nenhum integrante cadastrado ainda.</p>
+      <ul id="lista-integrantes" class="lista-integrantes"></ul>
+    </div>
+
     <form id="form-tarefa" class="form-tarefa">
       <div class="campo campo-tarefa">
         <label for="input-tarefa-texto">Tarefa</label>
@@ -116,7 +129,9 @@
       </div>
       <div class="campo campo-tarefa">
         <label for="input-tarefa-responsavel">Responsável</label>
-        <input type="text" id="input-tarefa-responsavel" placeholder="Ex.: Samuel" />
+        <select id="input-tarefa-responsavel">
+          <option value="">Sem responsável</option>
+        </select>
       </div>
       <button type="submit" class="botao botao-primario">+ Adicionar</button>
     </form>
