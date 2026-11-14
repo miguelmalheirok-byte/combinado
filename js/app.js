@@ -488,6 +488,9 @@
       if (trabalho.prazo) {
         textoMeta += " · prazo " + formatarDataCurta(trabalho.prazo);
       }
+      if (trabalho.tipo === "grupo" && Array.isArray(trabalho.integrantes) && trabalho.integrantes.length > 0) {
+        textoMeta += " · integrantes: " + trabalho.integrantes.join(", ");
+      }
       meta.textContent = textoMeta;
       item.appendChild(meta);
 
@@ -626,6 +629,7 @@
         salvarEstado();
         renderIntegrantes();
         renderSelectResponsavel();
+        renderTrabalhos();
       });
       chip.appendChild(botaoRemover);
 
@@ -656,6 +660,7 @@
     salvarEstado();
     formIntegrante.reset();
     renderIntegrantes();
+    renderTrabalhos();
     inputIntegranteNome.focus();
   });
 
