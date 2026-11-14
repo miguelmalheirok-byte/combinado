@@ -209,6 +209,10 @@
   var listaTrabalhos = document.getElementById("lista-trabalhos");
   var listaVazia = document.getElementById("lista-vazia");
   var btnNovoTrabalho = document.getElementById("btn-novo-trabalho");
+  var progressoTrabalhos = document.getElementById("progresso-trabalhos");
+  var progressoTexto = document.getElementById("progresso-texto");
+  var progressoBarra = document.getElementById("progresso-barra");
+  var progressoBarraPreenchida = document.getElementById("progresso-barra-preenchida");
   var filtrosBarra = document.getElementById("filtros-barra");
   var selectOrdenar = document.getElementById("select-ordenar");
   var selectFiltroMateria = document.getElementById("select-filtro-materia");
@@ -419,7 +423,22 @@
     return filtrados;
   }
 
+  function atualizarProgresso() {
+    var total = state.trabalhos.length;
+    progressoTrabalhos.hidden = total === 0;
+    if (total === 0) return;
+
+    var entregues = state.trabalhos.filter(function (t) { return t.status === "entregue"; }).length;
+    var percentual = Math.round((entregues / total) * 100);
+
+    progressoTexto.textContent = entregues + " de " + total + " " +
+      (total === 1 ? "trabalho entregue" : "trabalhos entregues");
+    progressoBarraPreenchida.style.width = percentual + "%";
+    progressoBarra.setAttribute("aria-valuenow", String(percentual));
+  }
+
   function renderTrabalhos() {
+    atualizarProgresso();
     atualizarSelectFiltroMateria();
     filtrosBarra.hidden = state.trabalhos.length === 0;
 

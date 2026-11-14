@@ -57,6 +57,13 @@
     <button type="button" id="btn-novo-trabalho" class="botao botao-primario">+ Novo trabalho</button>
   </div>
 
+  <div id="progresso-trabalhos" class="progresso-trabalhos" hidden>
+    <p id="progresso-texto" class="progresso-texto"></p>
+    <div class="progresso-barra" role="progressbar" aria-label="Progresso de trabalhos entregues" aria-valuemin="0" aria-valuemax="100" id="progresso-barra" aria-valuenow="0">
+      <div id="progresso-barra-preenchida" class="progresso-barra-preenchida"></div>
+    </div>
+  </div>
+
   <div id="filtros-barra" class="filtros-barra" hidden>
     <div class="campo-filtro">
       <label for="select-ordenar">Ordenar por</label>
