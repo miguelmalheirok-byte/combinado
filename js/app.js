@@ -251,6 +251,31 @@
     return partes[2] + "/" + partes[1] + "/" + partes[0];
   }
 
+  /* ---------------- lembrete de prazo ---------------- */
+
+  function calcularDiasRestantes(isoData) {
+    var partes = isoData.split("-");
+    if (partes.length !== 3) return null;
+    var dataPrazo = new Date(Number(partes[0]), Number(partes[1]) - 1, Number(partes[2]));
+    if (isNaN(dataPrazo.getTime())) return null;
+    var hoje = new Date();
+    hoje.setHours(0, 0, 0, 0);
+    dataPrazo.setHours(0, 0, 0, 0);
+    var umDiaMs = 24 * 60 * 60 * 1000;
+    return Math.round((dataPrazo.getTime() - hoje.getTime()) / umDiaMs);
+  }
+
+  function obterLembretePrazo(trabalho) {
+    if (!trabalho.prazo || trabalho.status === "entregue") return null;
+    var dias = calcularDiasRestantes(trabalho.prazo);
+    if (dias === null) return null;
+    if (dias < 0) return { texto: "Atrasado", classe: "selo-prazo-atrasado" };
+    if (dias === 0) return { texto: "Vence hoje", classe: "selo-prazo-hoje" };
+    if (dias === 1) return { texto: "Vence amanhã", classe: "selo-prazo-proximo" };
+    if (dias <= 3) return { texto: "Vence em " + dias + " dias", classe: "selo-prazo-proximo" };
+    return null;
+  }
+
   /* ---------------- diálogo de novo trabalho ---------------- */
 
   function abrirDialogNovoTrabalho() {
@@ -427,6 +452,15 @@
       selo.className = "selo-tipo";
       selo.textContent = TIPO_LABEL[trabalho.tipo] || "Individual";
       titulo.appendChild(selo);
+
+      var lembrete = obterLembretePrazo(trabalho);
+      if (lembrete) {
+        var seloPrazo = document.createElement("span");
+        seloPrazo.className = "selo-prazo " + lembrete.classe;
+        seloPrazo.textContent = lembrete.texto;
+        titulo.appendChild(seloPrazo);
+      }
+
       item.appendChild(titulo);
 
       var meta = document.createElement("p");

@@ -211,6 +211,26 @@ button, input, select, textarea { font: inherit; color: inherit; }
   margin: 0 0 10px;
 }
 
+.selo-prazo {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 999px;
+  margin-left: 6px;
+}
+
+.selo-prazo-atrasado,
+.selo-prazo-hoje {
+  background: #fbe4e1;
+  color: var(--cor-perigo);
+}
+
+.selo-prazo-proximo {
+  background: #fdf0d8;
+  color: #875700;
+}
+
 .selo-tipo {
   display: inline-block;
   font-size: 12px;
