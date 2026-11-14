@@ -459,7 +459,12 @@
     }
     listaVazia.hidden = true;
 
+    var precisaSalvarBackfill = false;
     visiveis.forEach(function (trabalho) {
+      if (trabalho.tipo === "grupo" && garantirIntegrantesAPartirDasTarefas(trabalho)) {
+        precisaSalvarBackfill = true;
+      }
+
       var item = document.createElement("li");
       item.className = "trabalho-card";
       item.setAttribute("data-status", trabalho.status);
@@ -547,9 +552,37 @@
       item.appendChild(acoes);
       listaTrabalhos.appendChild(item);
     });
+
+    if (precisaSalvarBackfill) {
+      salvarEstado();
+    }
   }
 
   /* ---------------- tarefas (divisão em trabalhos de grupo) ---------------- */
+
+  // Preenche "integrantes" uma única vez com nomes que já apareciam como responsável
+  // em tarefas criadas antes dessa lista existir (dados antigos). Depois dessa primeira
+  // vez, marca o trabalho como já inicializado, pra não desfazer remoções manuais do
+  // usuário mais tarde (ex.: se alguém sai do grupo mas ainda aparece numa tarefa antiga).
+  function garantirIntegrantesAPartirDasTarefas(trabalho) {
+    if (!Array.isArray(trabalho.integrantes)) trabalho.integrantes = [];
+    if (trabalho.integrantesInicializados) return false;
+    trabalho.integrantesInicializados = true;
+
+    if (Array.isArray(trabalho.tarefas)) {
+      trabalho.tarefas.forEach(function (tarefa) {
+        if (!tarefa.responsavel) return;
+        var jaTem = trabalho.integrantes.some(function (n) {
+          return n.toLowerCase() === tarefa.responsavel.toLowerCase();
+        });
+        if (!jaTem) {
+          trabalho.integrantes.push(tarefa.responsavel);
+        }
+      });
+    }
+
+    return true;
+  }
 
   var dialogTarefas = document.getElementById("dialog-tarefas");
   var dialogTarefasTitulo = document.getElementById("dialog-tarefas-titulo");
