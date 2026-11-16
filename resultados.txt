@@ -1,0 +1,232 @@
+Resultados dos testes automatizados do Combinado
+Data da execução: 16/11/2026 00:01 (UTC)
+Ferramenta: Playwright (Chromium headless), app servido localmente em http://localhost:8799
+
+================ testes/login.js ================
+--- carga inicial: tela de login visível, app escondido ---
+tela-auth visível: true
+app-principal visível: false
+titulo auth: Entrar
+--- tenta entrar com usuário que não existe ---
+erro visível (usuário não existe): true
+texto erro: Usuário ou senha incorretos.
+ainda na tela de login: true
+--- alterna pra criar conta ---
+titulo agora: Criar conta
+--- cria conta ---
+entrou (tela-auth escondida): true
+app-principal visível: true
+nome no cabeçalho: miguel
+--- cadastra um trabalho pro usuário miguel ---
+total trabalhos miguel: 1
+--- sai (logout) ---
+voltou pra tela de login: true
+app escondido de novo: true
+--- tenta criar conta com usuário que já existe (miguel) ---
+erro (usuário já existe): Esse usuário já existe. Tente entrar.
+--- cria segunda conta (samuel) e confere que a lista de trabalhos é vazia (isolada) ---
+nome no cabeçalho (samuel): samuel
+lista vazia pro samuel (não vê trabalho do miguel): true
+total trabalhos samuel: 0
+--- sai e entra com miguel de novo: trabalho dele ainda está lá ---
+total trabalhos miguel (persistiu): 1
+--- senha errada pro miguel ---
+erro senha errada: Usuário ou senha incorretos.
+continua na tela de login: true
+--- recarrega a página logado: sessão persiste (auto-login) ---
+depois do reload, já entrou direto (app visível): true
+nome no cabeçalho após reload: miguel
+total trabalhos após reload: 1
+--- erros de console ---
+[]
+
+================ testes/editar.js ================
+--- cria trabalho ---
+titulo criado: Relatório originalIndividual
+--- abre editar: campos vêm preenchidos ---
+dialog titulo: Editar trabalho
+input titulo preenchido: Relatório original
+input materia preenchido: Usabilidade
+input prazo preenchido: 2026-12-01
+tipo individual marcado: true
+--- muda título, matéria, tipo e salva ---
+total trabalhos (não duplicou): 1
+titulo atualizado: Relatório final A3 (editado)Em grupo
+meta atualizada: Sistemas Distribuídos · prazo 01/12/2026
+selo tipo atualizado: Em grupo
+--- status não foi perdido na edição ---
+status continua fazendo: fazendo
+--- cancelar edição não aplica mudança ---
+titulo não mudou (cancelar funcionou): Relatório final A3 (editado)Em grupo
+--- depois de cancelar edição, abrir "novo trabalho" não fica em modo edição ---
+dialog titulo (deve ser Novo trabalho): Novo trabalho
+campo titulo vazio: true
+total trabalhos agora (deve ser 2, não sobrescreveu o primeiro): 2
+--- persiste depois de reload ---
+total apos reload: 2
+titulo do primeiro apos reload: Relatório final A3 (editado)Em grupo
+--- erros de console ---
+[]
+
+================ testes/completo.js ================
+=== 1. CARGA INICIAL / LOGIN ===
+OK   - título da aba é Combinado
+OK   - tela de login aparece primeiro
+OK   - app escondido antes de logar
+=== 2. VALIDAÇÃO DE LOGIN SEM CONTA ===
+OK   - erro ao logar com usuário inexistente
+OK   - continua na tela de login
+=== 3. CADASTRO DE USUÁRIO ===
+OK   - entrou após cadastro
+OK   - nome certo no cabeçalho
+OK   - lista vazia pro usuário novo
+=== 4. CADASTRAR TRABALHO (individual, completo) ===
+OK   - 1 trabalho criado
+OK   - status inicial correto
+OK   - tipo individual exibido
+=== 5. CADASTRAR TRABALHO (grupo, sem prazo) ===
+OK   - 2 trabalhos no total
+OK   - tipo grupo exibido no 2º
+OK   - sem prazo não mostra "prazo" no 2º
+=== 6. VALIDAÇÃO: TÍTULO/MATÉRIA VAZIOS NÃO SALVAM ===
+OK   - diálogo continua aberto com campos obrigatórios vazios
+=== 7. EDITAR TRABALHO ===
+OK   - diálogo abre em modo edição
+OK   - campos vêm preenchidos
+OK   - não duplicou ao editar
+OK   - título atualizado
+=== 8. MUDAR STATUS ===
+OK   - status mudou pra entregue
+OK   - status mudou pra fazendo no 2º
+=== 9. EXCLUIR: CANCELAR NÃO APAGA ===
+OK   - diálogo de confirmação abre
+OK   - texto cita o título certo
+OK   - cancelar não apaga
+=== 10. EXCLUIR: CONFIRMAR APAGA SÓ O CERTO ===
+OK   - restou 1 trabalho
+OK   - o que sobrou é o certo (Projeto A3)
+=== 11. ISOLAMENTO ENTRE USUÁRIOS ===
+OK   - logout volta pra tela de login
+OK   - samuel não vê trabalho do miguel
+OK   - samuel tem 1 trabalho próprio
+=== 12. VOLTAR PRO MIGUEL: DADOS PERSISTIRAM ===
+OK   - miguel ainda tem seu trabalho (Combinado)
+OK   - senha errada é rejeitada
+OK   - login com senha errada falha
+=== 13. CADASTRO DUPLICADO ===
+OK   - erro ao cadastrar usuário duplicado
+=== 14. SESSÃO PERSISTE APÓS RELOAD ===
+OK   - reload mantém logado
+OK   - reload mantém dados (1 trabalho)
+=== 15. ACESSIBILIDADE BÁSICA ===
+OK   - todos os campos (app + login) têm label associado
+
+=== RESULTADO: 36 OK / 0 FALHOU ===
+erros de console: []
+avisos de console: []
+
+================ testes/tarefas.js ================
+OK   - login/cadastro ok
+OK   - 2 trabalhos criados
+OK   - trabalho individual NAO tem botao Tarefas
+OK   - trabalho em grupo TEM botao Tarefas (0/0)
+OK   - dialogo de tarefas abriu com titulo certo
+OK   - lista de tarefas comeca vazia
+OK   - 3 tarefas adicionadas
+OK   - estado vazio sumiu
+OK   - campo de texto limpa apos adicionar
+OK   - responsavel aparece na tarefa
+OK   - tarefa sem responsavel nao mostra selo
+OK   - tarefa marcada ganha classe tarefa-feita
+OK   - contador do card atualizou para 1/3
+OK   - tarefa excluida, restam 2
+OK   - contador atualizou para 1/2 apos exclusao
+OK   - apos reload, contador de tarefas persistiu (1/2)
+OK   - apos reload, 2 tarefas continuam na lista
+OK   - apos reload, a tarefa feita continua marcada
+OK   - ao editar para individual, botao Tarefas some
+OK   - ao voltar pra grupo, tarefas antigas continuam (1/2)
+OK   - tarefa adicionada via teclado + select (sem mouse no texto)
+--- total de checagens: 21 ---
+--- erros de console: 0 ---
+
+================ testes/integrantes.js ================
+OK   - lista de integrantes comeca vazia
+OK   - select de responsavel comeca so com "Sem responsavel"
+OK   - 2 integrantes adicionados
+OK   - estado vazio de integrantes sumiu
+OK   - select de responsavel ganhou as 2 opcoes + sem responsavel
+OK   - campo de nome limpa apos adicionar
+OK   - nao duplica integrante com nome repetido (case-insensitive)
+OK   - tarefa criada com responsavel escolhido no select
+OK   - integrante removido da lista
+OK   - select de responsavel perdeu a opcao Samuel
+OK   - tarefa ja criada continua mostrando Samuel como responsavel (nao eh referencia viva)
+OK   - apos reload, integrante (Miguel) persistiu
+OK   - apos reload, tarefa com responsavel persistiu
+OK   - integrante adicionado via teclado
+--- total de checagens: 14 ---
+--- erros de console: 0 ---
+
+================ testes/filtros.js ================
+OK   - barra de filtros escondida com lista vazia
+OK   - barra de filtros aparece com trabalhos
+OK   - ordem padrao por prazo (proximo primeiro, sem prazo por ultimo)
+OK   - ordenar por titulo A-Z
+OK   - ordenar por mais recentes primeiro
+OK   - select de materia tem as 3 materias + todas
+OK   - filtro por materia mostra so os 2 da materia escolhida
+OK   - voltando pra "todas as materias" mostra os 4 de novo
+OK   - materia sem nenhum trabalho some da lista de filtro
+OK   - apos reload, restam os 2 trabalhos nao excluidos
+--- total de checagens: 10 ---
+--- erros de console: 0 ---
+
+================ testes/lembrete.js ================
+OK   - atrasado mostra badge "Atrasado"
+OK   - badge atrasado tem a classe de perigo
+OK   - hoje mostra badge "Vence hoje"
+OK   - amanha mostra badge "Vence amanhã"
+OK   - 3 dias mostra badge "Vence em 3 dias"
+OK   - prazo distante (10 dias) nao mostra badge
+OK   - sem prazo nao mostra badge
+OK   - ao marcar como entregue, badge de atraso some
+OK   - ao voltar status, badge de atraso reaparece
+OK   - apos reload, badge "Atrasado" continua correto
+OK   - apos reload, badge "Vence hoje" continua correto
+--- total de checagens: 11 ---
+--- erros de console: 0 ---
+
+================ testes/progresso.js ================
+OK   - progresso escondido com lista vazia
+OK   - progresso aparece com 1 trabalho
+OK   - texto inicial "0 de 1 trabalho entregue"
+OK   - barra em 0%
+OK   - texto com 4 trabalhos, nenhum entregue
+OK   - texto atualiza pra "1 de 4 trabalhos entregues"
+OK   - barra em 25%
+OK   - texto em 100%: "4 de 4 trabalhos entregues"
+OK   - barra em 100%
+OK   - progresso some de novo com lista vazia
+OK   - apos reload, progresso persiste em 100%
+--- total de checagens: 11 ---
+--- erros de console: 0 ---
+
+================ testes/integrantes_card.js ================
+OK   - individual nunca mostra "integrantes" na meta
+OK   - grupo sem integrantes nao mostra "integrantes" na meta ainda
+OK   - card do grupo agora mostra os integrantes direto na tela principal
+OK   - ao remover integrante, a meta do card atualiza (so Miguel)
+OK   - apos reload, integrantes continuam visiveis no card
+--- total de checagens: 5 ---
+--- erros de console: 0 ---
+
+================ testes/backfill_integrantes.js ================
+OK   - card com tarefas antigas (sem integrantes explicitos) agora mostra os nomes no card
+OK   - contador de tarefas continua certo (0/2)
+OK   - chips de integrantes tambem foram preenchidos (Samuel e Miguel)
+OK   - select de responsavel tem as 2 opcoes + sem responsavel
+OK   - apos reload, o backfill persistiu de verdade no localStorage
+--- total de checagens: 5 ---
+--- erros de console: 0 ---
+
