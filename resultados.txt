@@ -1,5 +1,5 @@
 Resultados dos testes automatizados do Combinado
-Data da execução: 23/11/2026 17:33 (UTC)
+Data da execução: 23/11/2026 17:50 (UTC)
 Ferramenta: Playwright (Chromium headless), app servido localmente em http://localhost:8799
 
 ================ testes/login.js ================
@@ -165,6 +165,24 @@ OK   - grupo sem tarefas continua "Não comecei"
 OK   - de "Fazendo" também vai para "Pronto"
 OK   - após recarregar, status "Pronto" continua
 OK   - pronto não conta como entregue
+--- total de checagens: 14 ---
+--- erros de console: 0 ---
+
+================ testes/observacoes.js ================
+OK   - campo de observações existe no formulário
+OK   - campo de observações tem label
+OK   - trabalho sem observação não mostra o bloco
+OK   - novo trabalho abre com observações vazias
+OK   - observação aparece no card
+OK   - quebra de linha é preservada
+OK   - editar abre com a observação preenchida
+OK   - observação atualizada
+OK   - apagar a observação remove o bloco
+OK   - cancelar não salva a observação
+OK   - HTML digitado aparece como texto, sem virar tag
+OK   - limite de 500 caracteres
+OK   - após recarregar, observação continua
+OK   - trabalhos antigos sem observação abrem sem erro
 --- total de checagens: 14 ---
 --- erros de console: 0 ---
 

@@ -217,7 +217,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
   padding: 0;
 }
 
-.campo input[type="text"], .campo input[type="password"], .campo input[type="date"], .campo select {
+.campo input[type="text"], .campo input[type="password"], .campo input[type="date"], .campo select, .campo textarea {
   width: 100%;
   padding: 11px 12px;
   border: 1px solid var(--cor-borda);
@@ -225,10 +225,14 @@ button, input, select, textarea { font: inherit; color: inherit; }
   background: var(--cor-fundo);
 }
 
-.campo input:focus, .campo select:focus {
+.campo input:focus, .campo select:focus, .campo textarea:focus {
   outline: 2px solid var(--cor-marca);
   outline-offset: 1px;
 }
+
+.campo textarea { resize: vertical; min-height: 76px; line-height: 1.4; }
+
+.rotulo-opcional { font-weight: 400; color: var(--cor-texto-suave); }
 
 .campo-radio { border: none; margin: 0 0 16px; padding: 0; min-width: 0; }
 .opcao-radio { display: flex; align-items: center; gap: 8px; font-weight: 400; margin-bottom: 6px; }
@@ -314,6 +318,15 @@ button, input, select, textarea { font: inherit; color: inherit; }
   font-size: 13px;
   margin: 0 0 10px;
 }
+
+.trabalho-observacoes {
+  margin: 0 0 10px;
+  font-size: 14px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.trabalho-observacoes-rotulo { font-weight: 600; }
 
 .selo-prazo {
   display: inline-block;

@@ -2,7 +2,7 @@
 
 Esta pasta guarda os testes que usamos para conferir as funcionalidades do Combinado a cada mudança. Eles abrem o app num navegador de verdade (Chromium, via Playwright), clicam e preenchem os campos como uma pessoa faria e conferem se o resultado está certo. Também registram qualquer erro que apareça no console do navegador.
 
-O resultado da última execução completa está em `resultados.txt`, na raiz do repositório: 12 roteiros, 150 checagens aprovadas, nenhuma falha e nenhum erro de console.
+O resultado da última execução completa está em `resultados.txt`, na raiz do repositório: 13 roteiros, 164 checagens aprovadas, nenhuma falha e nenhum erro de console.
 
 ## O que cada arquivo testa
 
@@ -13,6 +13,7 @@ O resultado da última execução completa está em `resultados.txt`, na raiz do
 | `completo.js` | Fluxo geral: criar, mudar status, editar, excluir com confirmação e acessibilidade básica |
 | `tarefas.js` | Divisão de tarefas em trabalhos em grupo, contador, marcar como feita, excluir e uso só por teclado |
 | `tarefas_status.js` | Trabalho em grupo vai para "Pronto" quando todas as tarefas são concluídas, volta para "Fazendo" se reabrir/adicionar tarefa, e "Entregue" nunca é alterado |
+| `observacoes.js` | Campo de observações do trabalho: criar, editar, apagar, cancelar, quebra de linha, limite de 500 caracteres, HTML tratado como texto e dados antigos |
 | `integrantes.js` | Cadastro e remoção de integrantes do grupo e escolha do responsável na lista |
 | `integrantes_card.js` | Integrantes aparecendo direto no card da tela principal |
 | `backfill_integrantes.js` | Trabalhos antigos que já tinham responsável nas tarefas ganhando a lista de integrantes |

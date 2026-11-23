@@ -172,7 +172,7 @@
   };
 
   var state = {
-    trabalhos: []   // { id, titulo, materia, prazo, tipo, cor, status }
+    trabalhos: []   // { id, titulo, materia, prazo, tipo, cor, observacoes, status }
   };
 
   /* ---------------- persistência ---------------- */
@@ -242,6 +242,7 @@
   var inputTitulo = document.getElementById("input-titulo-trabalho");
   var inputMateria = document.getElementById("input-materia-trabalho");
   var inputPrazo = document.getElementById("input-prazo-trabalho");
+  var inputObservacoes = document.getElementById("input-observacoes-trabalho");
 
   var trabalhoEmEdicao = null;
 
@@ -308,6 +309,7 @@
     inputTitulo.value = trabalho.titulo;
     inputMateria.value = trabalho.materia;
     inputPrazo.value = trabalho.prazo || "";
+    inputObservacoes.value = trabalho.observacoes || "";
     var radioTipo = formTrabalho.querySelector('input[name="tipo-trabalho"][value="' + trabalho.tipo + '"]');
     if (radioTipo) radioTipo.checked = true;
     marcarCorNoDialog(corValida(trabalho.cor));
@@ -338,6 +340,7 @@
     var tipoSelecionado = formTrabalho.querySelector('input[name="tipo-trabalho"]:checked');
     var corSelecionada = formTrabalho.querySelector('input[name="cor-trabalho"]:checked');
     var cor = corSelecionada ? corValida(corSelecionada.value) : "";
+    var observacoes = inputObservacoes.value.trim();
 
     if (trabalhoEmEdicao) {
       trabalhoEmEdicao.titulo = titulo;
@@ -345,6 +348,7 @@
       trabalhoEmEdicao.prazo = inputPrazo.value || "";
       trabalhoEmEdicao.tipo = tipoSelecionado ? tipoSelecionado.value : "individual";
       trabalhoEmEdicao.cor = cor;
+      trabalhoEmEdicao.observacoes = observacoes;
       trabalhoEmEdicao = null;
     } else {
       state.trabalhos.push({
@@ -354,6 +358,7 @@
         prazo: inputPrazo.value || "",
         tipo: tipoSelecionado ? tipoSelecionado.value : "individual",
         cor: cor,
+        observacoes: observacoes,
         status: "nao-comecei",
         tarefas: [],
         integrantes: []
@@ -513,6 +518,17 @@
       }
       meta.textContent = textoMeta;
       item.appendChild(meta);
+
+      if (trabalho.observacoes) {
+        var obs = document.createElement("p");
+        obs.className = "trabalho-observacoes";
+        var rotuloObs = document.createElement("span");
+        rotuloObs.className = "trabalho-observacoes-rotulo";
+        rotuloObs.textContent = "Observações: ";
+        obs.appendChild(rotuloObs);
+        obs.appendChild(document.createTextNode(trabalho.observacoes));
+        item.appendChild(obs);
+      }
 
       var acoes = document.createElement("div");
       acoes.className = "trabalho-acoes";
