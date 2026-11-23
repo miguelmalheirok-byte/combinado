@@ -1,5 +1,5 @@
 Resultados dos testes automatizados do Combinado
-Data da execução: 23/11/2026 20:05 (UTC)
+Data da execução: 23/11/2026 20:44 (UTC)
 Ferramenta: Playwright (Chromium headless), app servido localmente em http://localhost:8799
 
 ================ testes/login.js ================
@@ -339,5 +339,26 @@ OK   - após recarregar, a escolha (claro) vence o aparelho (escuro)
 === PÁGINA 404 ===
 OK   - 404 também segue o tema salvo
 --- total de checagens: 21 ---
+--- erros de console: 0 ---
+
+================ testes/teste_usuarios.js ================
+=== FORMULÁRIO: RÓTULOS E BOTÃO SALVAR ===
+OK   - campo do nome do trabalho tem rótulo "Nome do trabalho"
+OK   - campo de matéria deixa claro que é a disciplina
+OK   - em tela de celular baixa (360x560), "Salvar trabalho" já aparece sem rolar
+OK   - continua visível depois de rolar o formulário
+=== TRABALHO EM GRUPO: PRÓXIMO PASSO FICA ÓBVIO ===
+OK   - grupo sem tarefas mostra a dica de próximo passo
+OK   - a dica manda tocar em Tarefas
+OK   - botão Tarefas fica em destaque
+OK   - trabalho individual não mostra a dica
+OK   - depois da primeira tarefa a dica some
+OK   - e o botão deixa de ficar em destaque
+OK   - contador de tarefas continua no botão (0/1)
+=== FILTRO POR MATÉRIA MAIS FÁCIL DE ACHAR ===
+OK   - rótulo do filtro diz "Filtrar por matéria"
+OK   - rótulo do filtro tem ícone de funil
+OK   - filtrar por matéria continua funcionando
+--- total de checagens: 14 ---
 --- erros de console: 0 ---
 

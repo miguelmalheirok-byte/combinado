@@ -612,6 +612,15 @@
         item.appendChild(obs);
       }
 
+      var semTarefas = trabalho.tipo === "grupo" &&
+        (!Array.isArray(trabalho.tarefas) || trabalho.tarefas.length === 0);
+      if (semTarefas) {
+        var dica = document.createElement("p");
+        dica.className = "trabalho-dica";
+        dica.textContent = "Próximo passo: toque em Tarefas para cadastrar os integrantes e dividir o trabalho.";
+        item.appendChild(dica);
+      }
+
       var acoes = document.createElement("div");
       acoes.className = "trabalho-acoes";
 
@@ -637,7 +646,7 @@
         var tarefasFeitas = tarefasDoTrabalho.filter(function (t) { return t.feito; }).length;
         var botaoTarefas = document.createElement("button");
         botaoTarefas.type = "button";
-        botaoTarefas.className = "botao botao-tarefas";
+        botaoTarefas.className = "botao botao-tarefas" + (semTarefas ? " botao-tarefas-destaque" : "");
         botaoTarefas.textContent = "Tarefas (" + tarefasFeitas + "/" + tarefasDoTrabalho.length + ")";
         botaoTarefas.addEventListener("click", function () {
           abrirDialogTarefas(trabalho);

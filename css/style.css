@@ -948,3 +948,41 @@ dialog h2 {
 @media (prefers-reduced-motion: reduce) {
   * { transition: none !important; animation: none !important; }
 }
+
+
+/* ---------- Ajustes a partir do teste com usuários ---------- */
+
+/* dica de próximo passo em trabalho em grupo sem tarefas */
+.trabalho-dica {
+  margin: 0 0 12px;
+  padding: 8px 12px;
+  border: 2px dashed var(--linha);
+  border-radius: 14px;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+/* botão de tarefas em destaque enquanto o grupo ainda não tem nenhuma */
+.trabalho-acoes .botao-tarefas.botao-tarefas-destaque {
+  background: var(--destaque);
+  color: #1e1b4b;
+  border-color: #1e1b4b;
+}
+
+/* filtro por matéria com ícone, mais fácil de achar */
+.campo-filtro label { display: inline-flex; align-items: center; gap: 6px; }
+.campo-filtro label svg { flex: none; }
+
+/* ações do formulário sempre visíveis, mesmo com o teclado ou em tela baixa */
+#form-trabalho .dialog-acoes {
+  position: sticky;
+  bottom: 0;
+  margin: 18px -22px 0;
+  padding: 14px 22px 22px;
+  background: var(--branco);
+  border-top: 2px solid var(--linha);
+}
+#dialog-trabalho { padding-bottom: 0; }
+
+:root[data-tema="escuro"] .trabalho-card[data-cor] .trabalho-dica { border-color: #1e1b4b; }

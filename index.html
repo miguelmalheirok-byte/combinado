@@ -112,7 +112,10 @@
       <button type="button" class="aba-status" data-status="entregue" aria-pressed="false">Entregue <span class="aba-contagem">0</span></button>
     </div>
     <div class="campo-filtro">
-      <label for="select-filtro-materia">Matéria</label>
+      <label for="select-filtro-materia">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 5h18l-7 8v6l-4 2v-8z"></path></svg>
+        Filtrar por matéria
+      </label>
       <select id="select-filtro-materia">
         <option value="">Todas as matérias</option>
       </select>
@@ -133,13 +136,13 @@
     <h2 id="dialog-trabalho-titulo">Novo trabalho</h2>
 
     <div class="campo">
-      <label for="input-titulo-trabalho">Título</label>
-      <input type="text" id="input-titulo-trabalho" placeholder="Ex.: Projeto A3" required />
+      <label for="input-titulo-trabalho">Nome do trabalho</label>
+      <input type="text" id="input-titulo-trabalho" placeholder="Ex.: Relatório de Redes" required />
     </div>
 
     <div class="campo">
-      <label for="input-materia-trabalho">Matéria</label>
-      <input type="text" id="input-materia-trabalho" placeholder="Ex.: Sistemas Distribuídos" required />
+      <label for="input-materia-trabalho">Matéria (disciplina)</label>
+      <input type="text" id="input-materia-trabalho" placeholder="Ex.: Redes de Computadores" required />
     </div>
 
     <div class="campo">
@@ -161,7 +164,7 @@
         </label>
         <label class="opcao-tipo">
           <input type="radio" name="tipo-trabalho" value="grupo" />
-          <span class="opcao-tipo-corpo"><strong>Em grupo</strong><small>Com tarefas por pessoa</small></span>
+          <span class="opcao-tipo-corpo"><strong>Em grupo</strong><small>Divida tarefas entre os colegas</small></span>
         </label>
       </div>
     </fieldset>
