@@ -6,6 +6,23 @@
 <title>Combinado</title>
 <meta name="description" content="Combinado: organize os trabalhos da faculdade — individuais e em grupo, de todas as matérias, num lugar só." />
 <meta name="theme-color" content="#f2f0ff" />
+<script>
+/* Aplica o tema salvo (ou o do aparelho) antes de desenhar a página, para não piscar. */
+(function () {
+  var tema = "claro";
+  try {
+    var salvo = localStorage.getItem("combinado:tema:v1");
+    if (salvo === "claro" || salvo === "escuro") {
+      tema = salvo;
+    } else if (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) {
+      tema = "escuro";
+    }
+  } catch (e) {
+    if (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) tema = "escuro";
+  }
+  document.documentElement.setAttribute("data-tema", tema);
+})();
+</script>
 <link rel="stylesheet" href="css/style.css" />
 <link rel="icon" type="image/png" href="img/logo.png" />
 <link rel="apple-touch-icon" href="img/logo.png" />
@@ -63,6 +80,10 @@
     <img src="img/logo.png" alt="Combinado" class="cabecalho-logo" width="44" height="44" />
   </span>
   <div class="cabecalho-usuario">
+    <button type="button" id="btn-tema" class="botao-tema" aria-label="Ativar tema escuro" title="Alternar tema">
+      <svg class="icone-lua" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"></path></svg>
+      <svg class="icone-sol" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4.5"></circle><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8"></path></svg>
+    </button>
     <span id="cabecalho-usuario-nome" class="cabecalho-usuario-nome"></span>
     <button type="button" id="btn-sair" class="botao botao-texto botao-sair">Sair</button>
   </div>

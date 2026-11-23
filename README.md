@@ -16,7 +16,7 @@ A lista de trabalhos fica sempre ordenada pelo prazo mais próximo e pode ser fi
 
 ## Visual
 
-O visual segue a direção "Quadro": fundo lilás, contornos grossos em azul-escuro, sombras sólidas e cards coloridos. Os títulos usam a fonte Bricolage Grotesque e o texto usa Instrument Sans, ambas open source (licença SIL OFL) e hospedadas na pasta `fonts/` do próprio projeto, sem depender de serviço externo.
+O visual segue a direção "Quadro": fundo lilás, contornos grossos em azul-escuro, sombras sólidas e cards coloridos. Os títulos usam a fonte Bricolage Grotesque e o texto usa Instrument Sans, ambas open source (licença SIL OFL) e hospedadas na pasta `fonts/` do próprio projeto, sem depender de serviço externo. Há também um tema escuro: na primeira visita o app segue a preferência do aparelho, e o botão com lua/sol no cabeçalho alterna entre claro e escuro, lembrando a escolha no navegador.
 
 ## O que vem por aí
 

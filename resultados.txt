@@ -1,5 +1,5 @@
 Resultados dos testes automatizados do Combinado
-Data da execução: 23/11/2026 18:23 (UTC)
+Data da execução: 23/11/2026 20:05 (UTC)
 Ferramenta: Playwright (Chromium headless), app servido localmente em http://localhost:8799
 
 ================ testes/login.js ================
@@ -308,5 +308,36 @@ OK   - cada cor tem nome para leitor de tela
 OK   - após recarregar, cor e status continuam
 OK   - trabalhos antigos sem cor aparecem sem erro
 --- total de checagens: 33 ---
+--- erros de console: 0 ---
+
+================ testes/tema.js ================
+=== PADRÃO SEGUE O APARELHO ===
+OK   - aparelho claro: abre no tema claro
+OK   - fundo claro (#f2f0ff)
+OK   - aparelho escuro: abre no tema escuro, já na tela de login
+OK   - fundo escuro (#15132e) na tela de login
+=== ALTERNAR E LEMBRAR ===
+OK   - botão tem nome para leitor de tela
+OK   - botão começa não pressionado
+OK   - clique muda para o tema escuro
+OK   - fundo muda para escuro
+OK   - nome do botão passa a "Ativar tema claro"
+OK   - botão fica pressionado
+=== CORES DOS CARDS NO TEMA ESCURO ===
+OK   - card azul continua azul (#8db8ff)
+OK   - texto do card azul continua escuro (legível)
+OK   - card sem cor vira superfície escura
+OK   - texto do card sem cor fica claro
+OK   - contraste do título nos cards >= 4,5 (WCAG AA)
+=== PERSISTÊNCIA ===
+OK   - após recarregar continua escuro
+OK   - escolha fica salva no navegador
+OK   - segundo clique volta ao claro
+=== ESCOLHA MANDA MAIS QUE O APARELHO ===
+OK   - aparelho escuro, mas a pessoa escolheu claro
+OK   - após recarregar, a escolha (claro) vence o aparelho (escuro)
+=== PÁGINA 404 ===
+OK   - 404 também segue o tema salvo
+--- total de checagens: 21 ---
 --- erros de console: 0 ---
 

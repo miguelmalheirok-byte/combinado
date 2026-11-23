@@ -207,6 +207,31 @@
     return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
   }
 
+  /* ---------------- tema claro / escuro ---------------- */
+
+  var CHAVE_TEMA = "combinado:tema:v1";
+  var btnTema = document.getElementById("btn-tema");
+  var metaTema = document.querySelector('meta[name="theme-color"]');
+
+  function temaAtual() {
+    return document.documentElement.getAttribute("data-tema") === "escuro" ? "escuro" : "claro";
+  }
+
+  function aplicarTema(tema) {
+    document.documentElement.setAttribute("data-tema", tema);
+    btnTema.setAttribute("aria-label", tema === "escuro" ? "Ativar tema claro" : "Ativar tema escuro");
+    btnTema.setAttribute("aria-pressed", tema === "escuro" ? "true" : "false");
+    if (metaTema) metaTema.setAttribute("content", tema === "escuro" ? "#15132e" : "#f2f0ff");
+  }
+
+  btnTema.addEventListener("click", function () {
+    var novo = temaAtual() === "escuro" ? "claro" : "escuro";
+    aplicarTema(novo);
+    try { localStorage.setItem(CHAVE_TEMA, novo); } catch (e) { /* sem armazenamento: vale só nesta visita */ }
+  });
+
+  aplicarTema(temaAtual());
+
   /* ---------------- referências de elementos ---------------- */
 
   var listaTrabalhos = document.getElementById("lista-trabalhos");

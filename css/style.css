@@ -42,6 +42,8 @@
 
 :root {
   --tinta: #1e1b4b;
+  --linha: #1e1b4b;
+  --erro: #a3221a;
   --fundo: #f2f0ff;
   --branco: #ffffff;
   --marca: #2f6f4f;
@@ -49,8 +51,11 @@
   --perigo: #ff8a80;
   --destaque: #ffd95a;
   --placeholder: #6a6790;
-  --borda: 2px solid var(--tinta);
-  --sombra: 4px 4px 0 var(--tinta);
+  --borda: 2px solid var(--linha);
+  --sombra: 4px 4px 0 var(--linha);
+  --fundo-feita: #d8f3e2;
+  --cobertura: rgba(30, 27, 75, 0.68);
+  color-scheme: light;
   --raio: 22px;
 
   --c-vermelho: #ff8a80;
@@ -63,6 +68,51 @@
 
   --fonte-titulo: "Bricolage Grotesque", "Trebuchet MS", system-ui, sans-serif;
   --fonte-texto: "Instrument Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+/* ---------- Tema escuro ----------
+   O texto e os contornos ficam claros; o que é pastel (cards coloridos,
+   selos, avatares, botões de destaque) mantém tinta escura por dentro. */
+:root[data-tema="escuro"] {
+  --tinta: #ece9ff;
+  --linha: #d9d4ff;
+  --erro: #ff9a92;
+  --fundo: #15132e;
+  --branco: #221f45;
+  --marca: #3f8d65;
+  --placeholder: #a29ed0;
+  --fundo-feita: #1f3b2e;
+  --cobertura: rgba(5, 4, 18, 0.78);
+  color-scheme: dark;
+}
+
+/* componentes pastel: texto e fundos internos continuam como no tema claro */
+:root[data-tema="escuro"] .trabalho-card[data-cor],
+:root[data-tema="escuro"] .previa-trabalho[data-cor],
+:root[data-tema="escuro"] .auth-carta,
+:root[data-tema="escuro"] .tarefas-progresso,
+:root[data-tema="escuro"] .confirmar-icone,
+:root[data-tema="escuro"] .form-integrante .botao,
+:root[data-tema="escuro"] .botao-perigo,
+:root[data-tema="escuro"] .avatar,
+:root[data-tema="escuro"] .tarefa-responsavel,
+:root[data-tema="escuro"] .selo-prazo-hoje,
+:root[data-tema="escuro"] .selo-prazo-proximo {
+  --tinta: #1e1b4b;
+  --branco: #ffffff;
+  color: #1e1b4b;
+}
+
+/* contorno escuro nos itens pequenos que ficam sobre fundo pastel */
+:root[data-tema="escuro"] .trabalho-card[data-cor] .trabalho-selos > *,
+:root[data-tema="escuro"] .trabalho-card[data-cor] .trabalho-acoes > *,
+:root[data-tema="escuro"] .avatar,
+:root[data-tema="escuro"] .tarefa-responsavel,
+:root[data-tema="escuro"] .selo-prazo-hoje,
+:root[data-tema="escuro"] .selo-prazo-proximo,
+:root[data-tema="escuro"] .form-integrante .botao,
+:root[data-tema="escuro"] .botao-perigo {
+  border-color: #1e1b4b;
 }
 
 * { box-sizing: border-box; }
@@ -84,7 +134,7 @@ select:focus-visible,
 input:focus-visible,
 textarea:focus-visible,
 a:focus-visible {
-  outline: 3px solid var(--tinta);
+  outline: 3px solid var(--linha);
   outline-offset: 3px;
 }
 
@@ -121,6 +171,25 @@ input::placeholder, textarea::placeholder { color: var(--placeholder); opacity: 
   font-size: 14px;
   font-weight: 700;
 }
+
+.botao-tema {
+  width: 44px;
+  height: 44px;
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: var(--borda);
+  border-radius: 999px;
+  background: var(--branco);
+  color: var(--tinta);
+  cursor: pointer;
+  padding: 0;
+}
+.botao-tema svg { display: block; }
+.botao-tema .icone-sol { display: none; }
+:root[data-tema="escuro"] .botao-tema .icone-sol { display: block; }
+:root[data-tema="escuro"] .botao-tema .icone-lua { display: none; }
 
 .cabecalho-usuario .botao-sair {
   min-height: 44px;
@@ -190,7 +259,7 @@ input::placeholder, textarea::placeholder { color: var(--placeholder); opacity: 
   background: var(--branco);
   border: var(--borda);
   border-radius: 26px;
-  box-shadow: 6px 6px 0 var(--tinta);
+  box-shadow: 6px 6px 0 var(--linha);
   padding: 24px 22px 22px;
 }
 
@@ -204,7 +273,7 @@ input::placeholder, textarea::placeholder { color: var(--placeholder); opacity: 
 .auth-botao-principal { width: 100%; }
 
 .auth-erro {
-  color: #a3221a;
+  color: var(--erro);
   font-size: 14px;
   font-weight: 700;
   margin: -4px 0 14px;
@@ -344,7 +413,7 @@ input::placeholder, textarea::placeholder { color: var(--placeholder); opacity: 
 .botao-primario {
   background: var(--marca);
   color: var(--marca-contraste);
-  box-shadow: 3px 3px 0 var(--tinta);
+  box-shadow: 3px 3px 0 var(--linha);
 }
 
 .conteudo-cabecalho .botao-primario { min-height: 56px; border-radius: 18px; font-size: 20px; box-shadow: var(--sombra); }
@@ -436,7 +505,7 @@ input::placeholder, textarea::placeholder { color: var(--placeholder); opacity: 
   box-shadow: 3px 3px 0 var(--c-verde);
 }
 
-.opcao-tipo input:focus-visible + .opcao-tipo-corpo { outline: 3px solid var(--tinta); outline-offset: 3px; }
+.opcao-tipo input:focus-visible + .opcao-tipo-corpo { outline: 3px solid var(--linha); outline-offset: 3px; }
 
 /* ---------- Seletor de cor do card ---------- */
 .opcoes-cor { display: flex; flex-wrap: wrap; gap: 9px; }
@@ -462,7 +531,7 @@ input::placeholder, textarea::placeholder { color: var(--placeholder); opacity: 
 }
 
 .opcao-cor[data-cor=""] .amostra-cor {
-  background: linear-gradient(135deg, #fff 44%, var(--tinta) 44%, var(--tinta) 56%, #fff 56%);
+  background: linear-gradient(135deg, #fff 44%, #1e1b4b 44%, #1e1b4b 56%, #fff 56%);
 }
 .opcao-cor[data-cor="vermelho"] { --amostra: var(--c-vermelho); }
 .opcao-cor[data-cor="laranja"]  { --amostra: var(--c-laranja); }
@@ -472,9 +541,9 @@ input::placeholder, textarea::placeholder { color: var(--placeholder); opacity: 
 .opcao-cor[data-cor="roxo"]     { --amostra: var(--c-roxo); }
 .opcao-cor[data-cor="rosa"]     { --amostra: var(--c-rosa); }
 
-.opcao-cor input:checked + .amostra-cor { box-shadow: 0 0 0 3px #fff, 0 0 0 5px var(--tinta); }
+.opcao-cor input:checked + .amostra-cor { box-shadow: 0 0 0 3px var(--branco), 0 0 0 5px var(--linha); }
 
-.opcao-cor input:focus-visible + .amostra-cor { outline: 3px solid var(--tinta); outline-offset: 6px; }
+.opcao-cor input:focus-visible + .amostra-cor { outline: 3px solid var(--linha); outline-offset: 6px; }
 
 /* ---------- Prévia do card ---------- */
 .previa-trabalho {
@@ -572,7 +641,7 @@ input::placeholder, textarea::placeholder { color: var(--placeholder); opacity: 
 .trabalho-observacoes {
   margin: 0;
   padding: 10px 12px;
-  border: 2px dashed var(--tinta);
+  border: 2px dashed var(--linha);
   border-radius: 14px;
   font-size: 15px;
   line-height: 1.35;
@@ -612,7 +681,7 @@ input::placeholder, textarea::placeholder { color: var(--placeholder); opacity: 
 dialog {
   border: var(--borda);
   border-radius: 26px;
-  box-shadow: 6px 6px 0 var(--tinta);
+  box-shadow: 6px 6px 0 var(--linha);
   background: var(--branco);
   color: var(--tinta);
   padding: 22px;
@@ -621,7 +690,7 @@ dialog {
   overflow: auto;
 }
 
-dialog::backdrop { background: rgba(30, 27, 75, 0.68); }
+dialog::backdrop { background: var(--cobertura); }
 
 dialog h2 {
   margin: 0 0 16px;
@@ -679,7 +748,7 @@ dialog h2 {
   border: var(--borda);
   border-radius: 14px;
   background: var(--branco);
-  box-shadow: 3px 3px 0 var(--tinta);
+  box-shadow: 3px 3px 0 var(--linha);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -750,7 +819,7 @@ dialog h2 {
   border: var(--borda);
   border-radius: 14px;
   background: var(--destaque);
-  box-shadow: 3px 3px 0 var(--tinta);
+  box-shadow: 3px 3px 0 var(--linha);
   font-family: var(--fonte-texto);
   font-size: 15px;
   font-weight: 700;
@@ -833,10 +902,10 @@ dialog h2 {
   border: var(--borda);
   border-radius: 16px;
   background: var(--branco);
-  box-shadow: 3px 3px 0 var(--tinta);
+  box-shadow: 3px 3px 0 var(--linha);
 }
 
-.tarefa-item.tarefa-feita { background: #d8f3e2; box-shadow: none; }
+.tarefa-item.tarefa-feita { background: var(--fundo-feita); box-shadow: none; }
 
 .tarefa-checkbox {
   display: flex;

@@ -2,7 +2,7 @@
 
 Esta pasta guarda os testes que usamos para conferir as funcionalidades do Combinado a cada mudança. Eles abrem o app num navegador de verdade (Chromium, via Playwright), clicam e preenchem os campos como uma pessoa faria e conferem se o resultado está certo. Também registram qualquer erro que apareça no console do navegador.
 
-O resultado da última execução completa está em `resultados.txt`, na raiz do repositório: 13 roteiros, 173 checagens aprovadas, nenhuma falha e nenhum erro de console.
+O resultado da última execução completa está em `resultados.txt`, na raiz do repositório: 14 roteiros, 194 checagens aprovadas, nenhuma falha e nenhum erro de console.
 
 ## O que cada arquivo testa
 
@@ -19,6 +19,7 @@ O resultado da última execução completa está em `resultados.txt`, na raiz do
 | `backfill_integrantes.js` | Trabalhos antigos que já tinham responsável nas tarefas ganhando a lista de integrantes |
 | `filtros.js` | Lista ordenada por prazo e filtro por matéria |
 | `status_cor.js` | Logo, fonte própria, status "Pronto", abas de status com contagem, cor do card (escolher, trocar, remover), selo de data, prévia do formulário e dados antigos sem cor |
+| `tema.js` | Tema escuro: segue o aparelho na primeira visita, botão de alternar, escolha salva ao recarregar, cores e contraste dos cards e página 404 |
 | `lembrete.js` | Avisos de prazo: atrasado, vence hoje, amanhã e em 3 dias |
 | `progresso.js` | Indicador de trabalhos entregues e barra de progresso |
 

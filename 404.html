@@ -4,6 +4,23 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <title>Página não encontrada · Combinado</title>
+<script>
+/* Aplica o tema salvo (ou o do aparelho) antes de desenhar a página, para não piscar. */
+(function () {
+  var tema = "claro";
+  try {
+    var salvo = localStorage.getItem("combinado:tema:v1");
+    if (salvo === "claro" || salvo === "escuro") {
+      tema = salvo;
+    } else if (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) {
+      tema = "escuro";
+    }
+  } catch (e) {
+    if (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) tema = "escuro";
+  }
+  document.documentElement.setAttribute("data-tema", tema);
+})();
+</script>
 <link rel="stylesheet" href="/combinado/css/style.css" />
 <link rel="icon" type="image/png" href="/combinado/img/logo.png" />
 </head>
