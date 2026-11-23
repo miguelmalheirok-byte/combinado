@@ -53,10 +53,9 @@ const { chromium } = require('playwright');
     titulos[3].startsWith('Trabalho C')
   );
 
-  // ordenar por titulo A-Z
-  await page.selectOption('#select-ordenar', 'titulo');
-  titulos = await titulosNaTela();
-  check('ordenar por titulo A-Z', titulos[0].startsWith('Trabalho A') && titulos[3].startsWith('Trabalho D'));
+  // a opcao "Titulo (A-Z)" foi trocada por ordenacao por status
+  const opcoesOrdenar = await page.locator('#select-ordenar option').allTextContents();
+  check('ordenar nao tem mais A-Z e tem "Status"', opcoesOrdenar.includes('Status') && !opcoesOrdenar.some((o) => o.includes('A-Z')));
 
   // ordenar por mais recentes primeiro (ultimo criado = Trabalho D)
   await page.selectOption('#select-ordenar', 'recentes');

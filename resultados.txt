@@ -1,5 +1,5 @@
 Resultados dos testes automatizados do Combinado
-Data da execução: 16/11/2026 00:01 (UTC)
+Data da execução: 16/11/2026 23:52 (UTC)
 Ferramenta: Playwright (Chromium headless), app servido localmente em http://localhost:8799
 
 ================ testes/login.js ================
@@ -168,11 +168,29 @@ OK   - integrante adicionado via teclado
 --- total de checagens: 14 ---
 --- erros de console: 0 ---
 
+================ testes/integrantes_card.js ================
+OK   - individual nunca mostra "integrantes" na meta
+OK   - grupo sem integrantes nao mostra "integrantes" na meta ainda
+OK   - card do grupo agora mostra os integrantes direto na tela principal
+OK   - ao remover integrante, a meta do card atualiza (so Miguel)
+OK   - apos reload, integrantes continuam visiveis no card
+--- total de checagens: 5 ---
+--- erros de console: 0 ---
+
+================ testes/backfill_integrantes.js ================
+OK   - card com tarefas antigas (sem integrantes explicitos) agora mostra os nomes no card
+OK   - contador de tarefas continua certo (0/2)
+OK   - chips de integrantes tambem foram preenchidos (Samuel e Miguel)
+OK   - select de responsavel tem as 2 opcoes + sem responsavel
+OK   - apos reload, o backfill persistiu de verdade no localStorage
+--- total de checagens: 5 ---
+--- erros de console: 0 ---
+
 ================ testes/filtros.js ================
 OK   - barra de filtros escondida com lista vazia
 OK   - barra de filtros aparece com trabalhos
 OK   - ordem padrao por prazo (proximo primeiro, sem prazo por ultimo)
-OK   - ordenar por titulo A-Z
+OK   - ordenar nao tem mais A-Z e tem "Status"
 OK   - ordenar por mais recentes primeiro
 OK   - select de materia tem as 3 materias + todas
 OK   - filtro por materia mostra so os 2 da materia escolhida
@@ -212,21 +230,37 @@ OK   - apos reload, progresso persiste em 100%
 --- total de checagens: 11 ---
 --- erros de console: 0 ---
 
-================ testes/integrantes_card.js ================
-OK   - individual nunca mostra "integrantes" na meta
-OK   - grupo sem integrantes nao mostra "integrantes" na meta ainda
-OK   - card do grupo agora mostra os integrantes direto na tela principal
-OK   - ao remover integrante, a meta do card atualiza (so Miguel)
-OK   - apos reload, integrantes continuam visiveis no card
---- total de checagens: 5 ---
---- erros de console: 0 ---
-
-================ testes/backfill_integrantes.js ================
-OK   - card com tarefas antigas (sem integrantes explicitos) agora mostra os nomes no card
-OK   - contador de tarefas continua certo (0/2)
-OK   - chips de integrantes tambem foram preenchidos (Samuel e Miguel)
-OK   - select de responsavel tem as 2 opcoes + sem responsavel
-OK   - apos reload, o backfill persistiu de verdade no localStorage
---- total de checagens: 5 ---
+================ testes/status_cor.js ================
+=== LOGO ===
+OK   - logo aparece no cabeçalho
+OK   - favicon aponta para a logo
+=== STATUS "PRONTO" ===
+OK   - select de status tem 4 opções na ordem certa
+OK   - status "pronto" gravado no card
+OK   - select do card mostra "Pronto"
+OK   - pronto não conta como entregue na barra
+=== ORDENAR POR STATUS ===
+OK   - ordem: Não comecei, Fazendo, Pronto, Entregue
+=== FILTRAR POR STATUS ===
+OK   - filtro "Pronto" mostra só 1 trabalho
+OK   - filtro "Entregue" mostra só 1 trabalho
+OK   - filtros combinados sem resultado mostram aviso
+OK   - limpar filtros volta aos 4 trabalhos
+=== COR DO CARD ===
+OK   - card T1 azul
+OK   - card T2 sem cor não tem data-cor
+OK   - cor azul aplicada na faixa
+OK   - card vermelho com faixa diferente do azul
+OK   - sem cor, faixa segue o status (pronto = azul de status)
+OK   - editar abre com a cor atual marcada
+OK   - cor trocada para roxo
+OK   - voltar para "Sem cor" remove a cor
+OK   - novo trabalho abre com "Sem cor"
+OK   - 8 opções de cor (sem cor + 7)
+OK   - cada cor tem nome para leitor de tela
+=== PERSISTÊNCIA E DADOS ANTIGOS ===
+OK   - após recarregar, cor e status continuam
+OK   - trabalhos antigos sem cor aparecem sem erro
+--- total de checagens: 24 ---
 --- erros de console: 0 ---
 

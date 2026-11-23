@@ -6,13 +6,15 @@
 <title>Combinado</title>
 <meta name="description" content="Combinado: organize os trabalhos da faculdade — individuais e em grupo, de todas as matérias, num lugar só." />
 <link rel="stylesheet" href="css/style.css" />
-<link rel="icon" href="data:," />
+<link rel="icon" type="image/png" href="img/logo.png" />
+<link rel="apple-touch-icon" href="img/logo.png" />
 </head>
 <body>
 
 <!-- ===================== TELA: LOGIN / CADASTRO ===================== -->
 <section id="tela-auth" class="tela-auth">
   <div class="auth-cartao">
+    <img src="img/logo.png" alt="" class="auth-logo" width="64" height="64" />
     <p class="auth-marca">Combinado</p>
     <h1 id="auth-titulo">Entrar</h1>
 
@@ -43,7 +45,10 @@
 <div id="app-principal" hidden>
 
 <header class="cabecalho">
-  <span class="cabecalho-marca">Combinado</span>
+  <span class="cabecalho-marca">
+    <img src="img/logo.png" alt="" class="cabecalho-logo" width="32" height="32" />
+    Combinado
+  </span>
   <div class="cabecalho-usuario">
     <span id="cabecalho-usuario-nome"></span>
     <button type="button" id="btn-sair" class="botao botao-texto botao-sair">Sair</button>
@@ -69,8 +74,18 @@
       <label for="select-ordenar">Ordenar por</label>
       <select id="select-ordenar">
         <option value="prazo">Prazo mais próximo</option>
-        <option value="titulo">Título (A-Z)</option>
+        <option value="status">Status</option>
         <option value="recentes">Mais recentes</option>
+      </select>
+    </div>
+    <div class="campo-filtro">
+      <label for="select-filtro-status">Status</label>
+      <select id="select-filtro-status">
+        <option value="">Todos os status</option>
+        <option value="nao-comecei">Não comecei</option>
+        <option value="fazendo">Fazendo</option>
+        <option value="pronto">Pronto</option>
+        <option value="entregue">Entregue</option>
       </select>
     </div>
     <div class="campo-filtro">
@@ -119,6 +134,52 @@
         <input type="radio" name="tipo-trabalho" value="grupo" />
         Em grupo
       </label>
+    </fieldset>
+
+    <fieldset class="campo campo-radio">
+      <legend>Cor do card</legend>
+      <div class="opcoes-cor">
+        <label class="opcao-cor" data-cor="">
+          <input type="radio" name="cor-trabalho" value="" checked />
+          <span class="amostra-cor" aria-hidden="true"></span>
+          <span class="rotulo-oculto">Sem cor</span>
+        </label>
+        <label class="opcao-cor" data-cor="vermelho">
+          <input type="radio" name="cor-trabalho" value="vermelho" />
+          <span class="amostra-cor" aria-hidden="true"></span>
+          <span class="rotulo-oculto">Vermelho</span>
+        </label>
+        <label class="opcao-cor" data-cor="laranja">
+          <input type="radio" name="cor-trabalho" value="laranja" />
+          <span class="amostra-cor" aria-hidden="true"></span>
+          <span class="rotulo-oculto">Laranja</span>
+        </label>
+        <label class="opcao-cor" data-cor="amarelo">
+          <input type="radio" name="cor-trabalho" value="amarelo" />
+          <span class="amostra-cor" aria-hidden="true"></span>
+          <span class="rotulo-oculto">Amarelo</span>
+        </label>
+        <label class="opcao-cor" data-cor="verde">
+          <input type="radio" name="cor-trabalho" value="verde" />
+          <span class="amostra-cor" aria-hidden="true"></span>
+          <span class="rotulo-oculto">Verde</span>
+        </label>
+        <label class="opcao-cor" data-cor="azul">
+          <input type="radio" name="cor-trabalho" value="azul" />
+          <span class="amostra-cor" aria-hidden="true"></span>
+          <span class="rotulo-oculto">Azul</span>
+        </label>
+        <label class="opcao-cor" data-cor="roxo">
+          <input type="radio" name="cor-trabalho" value="roxo" />
+          <span class="amostra-cor" aria-hidden="true"></span>
+          <span class="rotulo-oculto">Roxo</span>
+        </label>
+        <label class="opcao-cor" data-cor="rosa">
+          <input type="radio" name="cor-trabalho" value="rosa" />
+          <span class="amostra-cor" aria-hidden="true"></span>
+          <span class="rotulo-oculto">Rosa</span>
+        </label>
+      </div>
     </fieldset>
 
     <div class="dialog-acoes">

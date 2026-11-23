@@ -39,7 +39,15 @@ button, input, select, textarea { font: inherit; color: inherit; }
   gap: 12px;
 }
 
-.cabecalho-marca { font-weight: 700; font-size: 18px; }
+.cabecalho-marca {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 700;
+  font-size: 18px;
+}
+
+.cabecalho-logo { width: 32px; height: 32px; border-radius: 8px; display: block; }
 
 .cabecalho-usuario {
   display: flex;
@@ -74,6 +82,17 @@ button, input, select, textarea { font: inherit; color: inherit; }
   border-radius: var(--raio);
   padding: 28px 24px;
 }
+
+.auth-logo {
+  display: block;
+  width: 64px;
+  height: 64px;
+  border-radius: 14px;
+  margin: 0 auto 12px;
+}
+
+.auth-logo ~ .auth-marca,
+.auth-logo ~ h1 { text-align: center; }
 
 .auth-marca {
   margin: 0 0 4px;
@@ -198,7 +217,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
   padding: 0;
 }
 
-.campo input[type="text"], .campo input[type="date"], .campo select {
+.campo input[type="text"], .campo input[type="password"], .campo input[type="date"], .campo select {
   width: 100%;
   padding: 11px 12px;
   border: 1px solid var(--cor-borda);
@@ -211,25 +230,82 @@ button, input, select, textarea { font: inherit; color: inherit; }
   outline-offset: 1px;
 }
 
-.campo-radio { border: none; margin: 0 0 16px; }
+.campo-radio { border: none; margin: 0 0 16px; padding: 0; min-width: 0; }
 .opcao-radio { display: flex; align-items: center; gap: 8px; font-weight: 400; margin-bottom: 6px; }
 .opcao-radio input { width: 18px; height: 18px; }
+
+/* ---------- Seletor de cor do card ---------- */
+.opcoes-cor { display: flex; flex-wrap: wrap; gap: 8px; }
+
+.opcao-cor { position: relative; cursor: pointer; margin: 0; }
+
+.opcao-cor input {
+  position: absolute;
+  opacity: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  cursor: pointer;
+}
+
+.amostra-cor {
+  display: block;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 2px solid var(--cor-borda);
+  background: var(--amostra, #fff);
+}
+
+.opcao-cor[data-cor=""] .amostra-cor {
+  background: linear-gradient(135deg, #fff 45%, #c9cfca 45%, #c9cfca 55%, #fff 55%);
+}
+.opcao-cor[data-cor="vermelho"] { --amostra: #c0392b; }
+.opcao-cor[data-cor="laranja"]  { --amostra: #d9731a; }
+.opcao-cor[data-cor="amarelo"]  { --amostra: #e0b000; }
+.opcao-cor[data-cor="verde"]    { --amostra: #2e8b57; }
+.opcao-cor[data-cor="azul"]     { --amostra: #2f6fb5; }
+.opcao-cor[data-cor="roxo"]     { --amostra: #7b4fb0; }
+.opcao-cor[data-cor="rosa"]     { --amostra: #c2417c; }
+
+.opcao-cor input:checked + .amostra-cor {
+  border-color: var(--cor-texto);
+  box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--cor-texto);
+}
+
+.opcao-cor input:focus-visible + .amostra-cor {
+  outline: 2px solid var(--cor-marca);
+  outline-offset: 4px;
+}
 
 /* ---------- Lista de trabalhos ---------- */
 .lista-trabalhos { list-style: none; margin: 12px 0 0; padding: 0; }
 
 .trabalho-card {
-  background: var(--cor-cartao);
+  --cor-destaque: var(--cor-borda);
+  --cor-fundo-card: var(--cor-cartao);
+  background: var(--cor-fundo-card);
   border: 1px solid var(--cor-borda);
-  border-left: 4px solid var(--cor-borda);
+  border-left: 6px solid var(--cor-destaque);
   border-radius: var(--raio);
   padding: 12px 14px;
   margin-bottom: 10px;
 }
 
-.trabalho-card[data-status="nao-comecei"] { border-left-color: #9aa39c; }
-.trabalho-card[data-status="fazendo"] { border-left-color: #d99a1f; }
-.trabalho-card[data-status="entregue"] { border-left-color: var(--cor-marca); }
+/* Sem cor escolhida, a faixa lateral mostra o status */
+.trabalho-card[data-status="nao-comecei"] { --cor-destaque: #9aa39c; }
+.trabalho-card[data-status="fazendo"] { --cor-destaque: #d99a1f; }
+.trabalho-card[data-status="pronto"] { --cor-destaque: #2f6fb5; }
+.trabalho-card[data-status="entregue"] { --cor-destaque: var(--cor-marca); }
+
+/* Cor escolhida pelo usuário (faixa + fundo bem claro, o texto continua escuro) */
+.trabalho-card[data-cor="vermelho"] { --cor-destaque: #c0392b; --cor-fundo-card: #fdf1ef; }
+.trabalho-card[data-cor="laranja"]  { --cor-destaque: #d9731a; --cor-fundo-card: #fef3e8; }
+.trabalho-card[data-cor="amarelo"]  { --cor-destaque: #c99a00; --cor-fundo-card: #fff8e1; }
+.trabalho-card[data-cor="verde"]    { --cor-destaque: #2e8b57; --cor-fundo-card: #eef8f1; }
+.trabalho-card[data-cor="azul"]     { --cor-destaque: #2f6fb5; --cor-fundo-card: #edf4fb; }
+.trabalho-card[data-cor="roxo"]     { --cor-destaque: #7b4fb0; --cor-fundo-card: #f4eefa; }
+.trabalho-card[data-cor="rosa"]     { --cor-destaque: #c2417c; --cor-fundo-card: #fcedf4; }
 
 .trabalho-titulo { font-weight: 600; margin: 0 0 4px; }
 

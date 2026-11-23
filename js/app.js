@@ -1,6 +1,6 @@
 /* =========================================================
    Meus trabalhos — lógica do app
-   Protótipo 01: título, matéria, prazo, tipo, status, excluir
+   Protótipo 01: título, matéria, prazo, tipo, cor, status, excluir
    ========================================================= */
 (function () {
   "use strict";
@@ -160,8 +160,14 @@
   var STATUS_LABEL = {
     "nao-comecei": "Não comecei",
     "fazendo": "Fazendo",
+    "pronto": "Pronto",
     "entregue": "Entregue"
   };
+
+  // ordem do fluxo de um trabalho: usada na ordenação por status
+  var STATUS_ORDEM = ["nao-comecei", "fazendo", "pronto", "entregue"];
+
+  var CORES_VALIDAS = ["vermelho", "laranja", "amarelo", "verde", "azul", "roxo", "rosa"];
 
   var TIPO_LABEL = {
     "individual": "Individual",
@@ -169,7 +175,7 @@
   };
 
   var state = {
-    trabalhos: []   // { id, titulo, materia, prazo, tipo, status }
+    trabalhos: []   // { id, titulo, materia, prazo, tipo, cor, status }
   };
 
   /* ---------------- persistência ---------------- */
@@ -216,12 +222,14 @@
   var filtrosBarra = document.getElementById("filtros-barra");
   var selectOrdenar = document.getElementById("select-ordenar");
   var selectFiltroMateria = document.getElementById("select-filtro-materia");
+  var selectFiltroStatus = document.getElementById("select-filtro-status");
 
   var TEXTO_LISTA_VAZIA = 'Nenhum trabalho cadastrado ainda. Toque em "Novo trabalho" para começar.';
   var TEXTO_LISTA_SEM_RESULTADO = "Nenhum trabalho encontrado com esse filtro.";
 
   var ordenacaoAtual = "prazo";
   var filtroMateriaAtual = "";
+  var filtroStatusAtual = "";
 
   selectOrdenar.addEventListener("change", function () {
     ordenacaoAtual = selectOrdenar.value;
@@ -230,6 +238,11 @@
 
   selectFiltroMateria.addEventListener("change", function () {
     filtroMateriaAtual = selectFiltroMateria.value;
+    renderTrabalhos();
+  });
+
+  selectFiltroStatus.addEventListener("change", function () {
+    filtroStatusAtual = selectFiltroStatus.value;
     renderTrabalhos();
   });
 
@@ -282,6 +295,15 @@
 
   /* ---------------- diálogo de novo trabalho ---------------- */
 
+  function corValida(cor) {
+    return CORES_VALIDAS.indexOf(cor) !== -1 ? cor : "";
+  }
+
+  function marcarCorNoDialog(cor) {
+    var radio = formTrabalho.querySelector('input[name="cor-trabalho"][value="' + cor + '"]');
+    if (radio) radio.checked = true;
+  }
+
   function abrirDialogNovoTrabalho() {
     trabalhoEmEdicao = null;
     dialogTrabalhoTitulo.textContent = "Novo trabalho";
@@ -298,6 +320,7 @@
     inputPrazo.value = trabalho.prazo || "";
     var radioTipo = formTrabalho.querySelector('input[name="tipo-trabalho"][value="' + trabalho.tipo + '"]');
     if (radioTipo) radioTipo.checked = true;
+    marcarCorNoDialog(corValida(trabalho.cor));
     dialogTrabalho.showModal();
     inputTitulo.focus();
   }
@@ -323,12 +346,15 @@
     if (!titulo || !materia) return;
 
     var tipoSelecionado = formTrabalho.querySelector('input[name="tipo-trabalho"]:checked');
+    var corSelecionada = formTrabalho.querySelector('input[name="cor-trabalho"]:checked');
+    var cor = corSelecionada ? corValida(corSelecionada.value) : "";
 
     if (trabalhoEmEdicao) {
       trabalhoEmEdicao.titulo = titulo;
       trabalhoEmEdicao.materia = materia;
       trabalhoEmEdicao.prazo = inputPrazo.value || "";
       trabalhoEmEdicao.tipo = tipoSelecionado ? tipoSelecionado.value : "individual";
+      trabalhoEmEdicao.cor = cor;
       trabalhoEmEdicao = null;
     } else {
       state.trabalhos.push({
@@ -337,6 +363,7 @@
         materia: materia,
         prazo: inputPrazo.value || "",
         tipo: tipoSelecionado ? tipoSelecionado.value : "individual",
+        cor: cor,
         status: "nao-comecei",
         tarefas: [],
         integrantes: []
@@ -409,11 +436,16 @@
 
   function ordenarEFiltrar(lista) {
     var filtrados = lista.filter(function (t) {
-      return !filtroMateriaAtual || t.materia === filtroMateriaAtual;
+      return (!filtroMateriaAtual || t.materia === filtroMateriaAtual) &&
+             (!filtroStatusAtual || t.status === filtroStatusAtual);
     });
 
-    if (ordenacaoAtual === "titulo") {
-      filtrados.sort(function (a, b) { return a.titulo.localeCompare(b.titulo, "pt-BR"); });
+    if (ordenacaoAtual === "status") {
+      // por etapa do fluxo; dentro da mesma etapa, prazo mais próximo primeiro
+      filtrados.sort(function (a, b) {
+        var diferenca = STATUS_ORDEM.indexOf(a.status) - STATUS_ORDEM.indexOf(b.status);
+        return diferenca !== 0 ? diferenca : compararPorPrazo(a, b);
+      });
     } else if (ordenacaoAtual === "recentes") {
       filtrados.reverse();
     } else {
@@ -468,6 +500,8 @@
       var item = document.createElement("li");
       item.className = "trabalho-card";
       item.setAttribute("data-status", trabalho.status);
+      var cor = corValida(trabalho.cor);
+      if (cor) item.setAttribute("data-cor", cor);
 
       var titulo = document.createElement("p");
       titulo.className = "trabalho-titulo";
