@@ -218,7 +218,7 @@
   var progressoBarraPreenchida = document.getElementById("progresso-barra-preenchida");
   var filtrosBarra = document.getElementById("filtros-barra");
   var selectFiltroMateria = document.getElementById("select-filtro-materia");
-  var selectFiltroStatus = document.getElementById("select-filtro-status");
+  var abasStatus = document.getElementById("abas-status");
 
   var TEXTO_LISTA_VAZIA = 'Nenhum trabalho cadastrado ainda. Toque em "Novo trabalho" para começar.';
   var TEXTO_LISTA_SEM_RESULTADO = "Nenhum trabalho encontrado com esse filtro.";
@@ -231,10 +231,27 @@
     renderTrabalhos();
   });
 
-  selectFiltroStatus.addEventListener("change", function () {
-    filtroStatusAtual = selectFiltroStatus.value;
+  abasStatus.addEventListener("click", function (evento) {
+    var aba = evento.target.closest ? evento.target.closest(".aba-status") : null;
+    if (!aba || !abasStatus.contains(aba)) return;
+    filtroStatusAtual = aba.getAttribute("data-status") || "";
     renderTrabalhos();
   });
+
+  function atualizarAbasStatus() {
+    var contagens = { "": 0 };
+    state.trabalhos.forEach(function (t) {
+      if (filtroMateriaAtual && t.materia !== filtroMateriaAtual) return;
+      contagens[""] += 1;
+      contagens[t.status] = (contagens[t.status] || 0) + 1;
+    });
+    abasStatus.querySelectorAll(".aba-status").forEach(function (aba) {
+      var chave = aba.getAttribute("data-status") || "";
+      aba.setAttribute("aria-pressed", chave === filtroStatusAtual ? "true" : "false");
+      var numero = aba.querySelector(".aba-contagem");
+      if (numero) numero.textContent = String(contagens[chave] || 0);
+    });
+  }
 
   var dialogTrabalho = document.getElementById("dialog-trabalho");
   var dialogTrabalhoTitulo = document.getElementById("dialog-trabalho-titulo");
@@ -248,6 +265,10 @@
 
   var dialogConfirmar = document.getElementById("dialog-confirmar");
   var dialogConfirmarTexto = document.getElementById("dialog-confirmar-texto");
+  var dialogConfirmarTitulo = document.getElementById("dialog-confirmar-titulo");
+  var previaTrabalho = document.getElementById("previa-trabalho");
+  var previaTitulo = document.getElementById("previa-titulo");
+  var previaMeta = document.getElementById("previa-meta");
   var btnConfirmarExclusao = document.getElementById("btn-confirmar-exclusao");
 
   /* ---------------- utilidades ---------------- */
@@ -295,10 +316,30 @@
     if (radio) radio.checked = true;
   }
 
+  function atualizarPrevia() {
+    var corSel = formTrabalho.querySelector('input[name="cor-trabalho"]:checked');
+    var cor = corSel ? corValida(corSel.value) : "";
+    if (cor) previaTrabalho.setAttribute("data-cor", cor);
+    else previaTrabalho.removeAttribute("data-cor");
+    previaTitulo.textContent = inputTitulo.value.trim() || "Título do trabalho";
+    var partes = [];
+    var materia = inputMateria.value.trim();
+    if (materia) partes.push(materia);
+    if (inputPrazo.value) partes.push("prazo " + formatarDataCurta(inputPrazo.value));
+    previaMeta.textContent = partes.length ? partes.join(" · ") : "Matéria e prazo";
+  }
+
+  formTrabalho.addEventListener("input", atualizarPrevia);
+  formTrabalho.addEventListener("change", atualizarPrevia);
+  formTrabalho.addEventListener("reset", function () {
+    setTimeout(atualizarPrevia, 0);
+  });
+
   function abrirDialogNovoTrabalho() {
     trabalhoEmEdicao = null;
     dialogTrabalhoTitulo.textContent = "Novo trabalho";
     formTrabalho.reset();
+    atualizarPrevia();
     dialogTrabalho.showModal();
     inputTitulo.focus();
   }
@@ -313,6 +354,7 @@
     var radioTipo = formTrabalho.querySelector('input[name="tipo-trabalho"][value="' + trabalho.tipo + '"]');
     if (radioTipo) radioTipo.checked = true;
     marcarCorNoDialog(corValida(trabalho.cor));
+    atualizarPrevia();
     dialogTrabalho.showModal();
     inputTitulo.focus();
   }
@@ -373,8 +415,8 @@
   /* ---------------- lista de trabalhos ---------------- */
 
   function pedirConfirmacaoExclusao(trabalho) {
-    dialogConfirmarTexto.textContent =
-      'Tem certeza que quer excluir "' + trabalho.titulo + '"? Essa ação não pode ser desfeita.';
+    dialogConfirmarTitulo.textContent = 'Excluir "' + trabalho.titulo + '"?';
+    dialogConfirmarTexto.textContent = "O trabalho some da lista e não dá para desfazer.";
     btnConfirmarExclusao.onclick = function () {
       state.trabalhos = state.trabalhos.filter(function (t) { return t.id !== trabalho.id; });
       salvarEstado();
@@ -449,8 +491,13 @@
     var entregues = state.trabalhos.filter(function (t) { return t.status === "entregue"; }).length;
     var percentual = Math.round((entregues / total) * 100);
 
-    progressoTexto.textContent = entregues + " de " + total + " " +
-      (total === 1 ? "trabalho entregue" : "trabalhos entregues");
+    progressoTexto.textContent = "";
+    var numeroProgresso = document.createElement("span");
+    numeroProgresso.className = "progresso-numero";
+    numeroProgresso.textContent = String(entregues);
+    progressoTexto.appendChild(numeroProgresso);
+    progressoTexto.appendChild(document.createTextNode(
+      " de " + total + " " + (total === 1 ? "trabalho entregue" : "trabalhos entregues")));
     progressoBarraPreenchida.style.width = percentual + "%";
     progressoBarra.setAttribute("aria-valuenow", String(percentual));
   }
@@ -458,6 +505,7 @@
   function renderTrabalhos() {
     atualizarProgresso();
     atualizarSelectFiltroMateria();
+    atualizarAbasStatus();
     filtrosBarra.hidden = state.trabalhos.length === 0;
 
     listaTrabalhos.innerHTML = "";
@@ -489,30 +537,39 @@
       var cor = corValida(trabalho.cor);
       if (cor) item.setAttribute("data-cor", cor);
 
-      var titulo = document.createElement("p");
-      titulo.className = "trabalho-titulo";
-      titulo.textContent = trabalho.titulo;
-      var selo = document.createElement("span");
-      selo.className = "selo-tipo";
-      selo.textContent = TIPO_LABEL[trabalho.tipo] || "Individual";
-      titulo.appendChild(selo);
+      var selos = document.createElement("div");
+      selos.className = "trabalho-selos";
+
+      if (trabalho.prazo) {
+        var seloData = document.createElement("span");
+        seloData.className = "selo-data";
+        seloData.textContent = "Prazo " + formatarDataCurta(trabalho.prazo).slice(0, 5);
+        selos.appendChild(seloData);
+      }
 
       var lembrete = obterLembretePrazo(trabalho);
       if (lembrete) {
         var seloPrazo = document.createElement("span");
         seloPrazo.className = "selo-prazo " + lembrete.classe;
         seloPrazo.textContent = lembrete.texto;
-        titulo.appendChild(seloPrazo);
+        selos.appendChild(seloPrazo);
       }
 
+      var selo = document.createElement("span");
+      selo.className = "selo-tipo";
+      selo.textContent = TIPO_LABEL[trabalho.tipo] || "Individual";
+      selos.appendChild(selo);
+
+      item.appendChild(selos);
+
+      var titulo = document.createElement("p");
+      titulo.className = "trabalho-titulo";
+      titulo.textContent = trabalho.titulo;
       item.appendChild(titulo);
 
       var meta = document.createElement("p");
       meta.className = "trabalho-meta";
       var textoMeta = trabalho.materia;
-      if (trabalho.prazo) {
-        textoMeta += " · prazo " + formatarDataCurta(trabalho.prazo);
-      }
       if (trabalho.tipo === "grupo" && Array.isArray(trabalho.integrantes) && trabalho.integrantes.length > 0) {
         textoMeta += " · integrantes: " + trabalho.integrantes.join(", ");
       }
@@ -555,7 +612,7 @@
         var tarefasFeitas = tarefasDoTrabalho.filter(function (t) { return t.feito; }).length;
         var botaoTarefas = document.createElement("button");
         botaoTarefas.type = "button";
-        botaoTarefas.className = "botao botao-texto";
+        botaoTarefas.className = "botao botao-tarefas";
         botaoTarefas.textContent = "Tarefas (" + tarefasFeitas + "/" + tarefasDoTrabalho.length + ")";
         botaoTarefas.addEventListener("click", function () {
           abrirDialogTarefas(trabalho);
@@ -650,11 +707,39 @@
 
   var trabalhoTarefasAtual = null;
 
+  var tarefasAnelArco = document.getElementById("tarefas-anel-arco");
+  var tarefasAnelNumero = document.getElementById("tarefas-anel-numero");
+  var tarefasProgressoTitulo = document.getElementById("tarefas-progresso-titulo");
+  var CIRCUNFERENCIA_ANEL = 213.63;
+
+  function indiceAvatar(nome) {
+    var lista = (trabalhoTarefasAtual && trabalhoTarefasAtual.integrantes) || [];
+    var i = lista.indexOf(nome);
+    return i === -1 ? 0 : i % 6;
+  }
+
+  function atualizarAnelTarefas() {
+    if (!trabalhoTarefasAtual) return;
+    var tarefas = trabalhoTarefasAtual.tarefas || [];
+    var feitas = tarefas.filter(function (t) { return t.feito; }).length;
+    var total = tarefas.length;
+    var fracao = total === 0 ? 0 : feitas / total;
+    tarefasAnelArco.setAttribute("stroke-dasharray",
+      (CIRCUNFERENCIA_ANEL * fracao).toFixed(2) + " " + CIRCUNFERENCIA_ANEL);
+    tarefasAnelNumero.textContent = feitas + "/" + total;
+    if (total === 0) {
+      tarefasProgressoTitulo.textContent = "Nenhuma tarefa ainda";
+    } else {
+      tarefasProgressoTitulo.textContent = feitas + " de " + total + " " +
+        (total === 1 ? "tarefa concluída" : "tarefas concluídas");
+    }
+  }
+
   function abrirDialogTarefas(trabalho) {
     trabalhoTarefasAtual = trabalho;
     if (!Array.isArray(trabalho.tarefas)) trabalho.tarefas = [];
     if (!Array.isArray(trabalho.integrantes)) trabalho.integrantes = [];
-    dialogTarefasTitulo.textContent = "Tarefas de " + trabalho.titulo;
+    dialogTarefasTitulo.textContent = trabalho.titulo;
     formTarefa.reset();
     formIntegrante.reset();
     renderIntegrantes();
@@ -697,6 +782,12 @@
     integrantes.forEach(function (nome) {
       var chip = document.createElement("li");
       chip.className = "integrante-chip";
+
+      var avatar = document.createElement("span");
+      avatar.className = "avatar av-" + indiceAvatar(nome);
+      avatar.setAttribute("aria-hidden", "true");
+      avatar.textContent = nome.charAt(0).toUpperCase();
+      chip.appendChild(avatar);
 
       var nomeSpan = document.createElement("span");
       nomeSpan.textContent = nome;
@@ -753,6 +844,7 @@
     var tarefas = trabalhoTarefasAtual.tarefas || [];
     listaTarefas.innerHTML = "";
     tarefasVazio.hidden = tarefas.length !== 0;
+    atualizarAnelTarefas();
 
     tarefas.forEach(function (tarefa) {
       var item = document.createElement("li");
@@ -783,7 +875,7 @@
 
       if (tarefa.responsavel) {
         var responsavelSpan = document.createElement("span");
-        responsavelSpan.className = "tarefa-responsavel";
+        responsavelSpan.className = "tarefa-responsavel av-" + indiceAvatar(tarefa.responsavel);
         responsavelSpan.textContent = tarefa.responsavel;
         item.appendChild(responsavelSpan);
       }

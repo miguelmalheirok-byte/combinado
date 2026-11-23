@@ -1,5 +1,5 @@
 Resultados dos testes automatizados do Combinado
-Data da execução: 23/11/2026 17:50 (UTC)
+Data da execução: 23/11/2026 18:23 (UTC)
 Ferramenta: Playwright (Chromium headless), app servido localmente em http://localhost:8799
 
 ================ testes/login.js ================
@@ -42,7 +42,7 @@ total trabalhos após reload: 1
 
 ================ testes/editar.js ================
 --- cria trabalho ---
-titulo criado: Relatório originalIndividual
+titulo criado: Relatório original
 --- abre editar: campos vêm preenchidos ---
 dialog titulo: Editar trabalho
 input titulo preenchido: Relatório original
@@ -51,20 +51,20 @@ input prazo preenchido: 2026-12-01
 tipo individual marcado: true
 --- muda título, matéria, tipo e salva ---
 total trabalhos (não duplicou): 1
-titulo atualizado: Relatório final A3 (editado)Em grupo
-meta atualizada: Sistemas Distribuídos · prazo 01/12/2026
+titulo atualizado: Relatório final A3 (editado)
+meta atualizada: Sistemas Distribuídos
 selo tipo atualizado: Em grupo
 --- status não foi perdido na edição ---
 status continua fazendo: fazendo
 --- cancelar edição não aplica mudança ---
-titulo não mudou (cancelar funcionou): Relatório final A3 (editado)Em grupo
+titulo não mudou (cancelar funcionou): Relatório final A3 (editado)
 --- depois de cancelar edição, abrir "novo trabalho" não fica em modo edição ---
 dialog titulo (deve ser Novo trabalho): Novo trabalho
 campo titulo vazio: true
 total trabalhos agora (deve ser 2, não sobrescreveu o primeiro): 2
 --- persiste depois de reload ---
 total apos reload: 2
-titulo do primeiro apos reload: Relatório final A3 (editado)Em grupo
+titulo do primeiro apos reload: Relatório final A3 (editado)
 --- erros de console ---
 []
 
@@ -268,6 +268,7 @@ OK   - apos reload, progresso persiste em 100%
 ================ testes/status_cor.js ================
 === LOGO ===
 OK   - logo aparece no cabeçalho
+OK   - fonte dos títulos (Bricolage Grotesque) carregada do próprio site
 OK   - favicon aponta para a logo
 === STATUS "PRONTO" ===
 OK   - select de status tem 4 opções na ordem certa
@@ -276,17 +277,27 @@ OK   - select do card mostra "Pronto"
 OK   - pronto não conta como entregue na barra
 === ORDEM DA LISTA ===
 OK   - lista sempre por prazo mais próximo (T4, T2, T1, T3)
-=== FILTRAR POR STATUS ===
+=== FILTRAR POR STATUS (abas) ===
+OK   - abas mostram contagem por status (4, 1, 1, 1, 1)
+OK   - aba "Todos" começa selecionada
 OK   - filtro "Pronto" mostra só 1 trabalho
+OK   - aba "Pronto" fica marcada e "Todos" desmarca
 OK   - filtro "Entregue" mostra só 1 trabalho
 OK   - filtros combinados sem resultado mostram aviso
 OK   - limpar filtros volta aos 4 trabalhos
 === COR DO CARD ===
 OK   - card T1 azul
 OK   - card T2 sem cor não tem data-cor
-OK   - cor azul aplicada na faixa
-OK   - card vermelho com faixa diferente do azul
-OK   - sem cor, faixa segue o status (pronto = azul de status)
+OK   - card azul pintado de azul (#8db8ff)
+OK   - card vermelho com cor diferente do azul
+OK   - card vermelho pintado de #ff8a80
+OK   - sem cor, card fica branco
+=== SELO DE DATA ===
+OK   - card com prazo mostra selo de data "Prazo 10/01"
+OK   - título do card não carrega mais selos
+=== PRÉVIA NO FORMULÁRIO ===
+OK   - prévia mostra o título digitado
+OK   - prévia muda para a cor escolhida
 OK   - editar abre com a cor atual marcada
 OK   - cor trocada para roxo
 OK   - voltar para "Sem cor" remove a cor
@@ -296,6 +307,6 @@ OK   - cada cor tem nome para leitor de tela
 === PERSISTÊNCIA E DADOS ANTIGOS ===
 OK   - após recarregar, cor e status continuam
 OK   - trabalhos antigos sem cor aparecem sem erro
---- total de checagens: 24 ---
+--- total de checagens: 33 ---
 --- erros de console: 0 ---
 

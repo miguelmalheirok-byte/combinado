@@ -12,7 +12,11 @@ Trabalhos de várias matérias, individuais e em grupo, acontecem ao mesmo tempo
 
 O app já permite criar uma conta e fazer login, com cada usuário vendo só os próprios trabalhos. Dá para cadastrar um trabalho com título, matéria, prazo e tipo (individual ou em grupo), editar depois de criado, escrever observações livres sobre o trabalho, escolher uma cor para o card, acompanhar o status (não comecei, fazendo, pronto, entregue) e excluir com confirmação. Nos trabalhos em grupo também dá para cadastrar os integrantes do grupo e dividir as tarefas entre eles, escolhendo o responsável de cada uma numa lista e acompanhando quantas já foram concluídas. Quando todas as tarefas de um trabalho em grupo são concluídas, ele passa sozinho para o status "Pronto".
 
-A lista de trabalhos fica sempre ordenada pelo prazo mais próximo e pode ser filtrada por status e por matéria. Trabalhos perto do prazo (ou já atrasados) ganham um aviso destacado no card, enquanto não forem marcados como entregues. No topo da lista também aparece quantos trabalhos já foram entregues do total, com uma barra de progresso.
+A lista de trabalhos fica sempre ordenada pelo prazo mais próximo e pode ser filtrada por status, por abas com a contagem de cada um, e por matéria. Trabalhos perto do prazo (ou já atrasados) ganham um aviso destacado no card, enquanto não forem marcados como entregues. No topo da lista também aparece quantos trabalhos já foram entregues do total, com uma barra de progresso.
+
+## Visual
+
+O visual segue a direção "Quadro": fundo lilás, contornos grossos em azul-escuro, sombras sólidas e cards coloridos. Os títulos usam a fonte Bricolage Grotesque e o texto usa Instrument Sans, ambas open source (licença SIL OFL) e hospedadas na pasta `fonts/` do próprio projeto, sem depender de serviço externo.
 
 ## O que vem por aí
 

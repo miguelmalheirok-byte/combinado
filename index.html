@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <title>Combinado</title>
 <meta name="description" content="Combinado: organize os trabalhos da faculdade — individuais e em grupo, de todas as matérias, num lugar só." />
+<meta name="theme-color" content="#f2f0ff" />
 <link rel="stylesheet" href="css/style.css" />
 <link rel="icon" type="image/png" href="img/logo.png" />
 <link rel="apple-touch-icon" href="img/logo.png" />
@@ -13,31 +14,44 @@
 
 <!-- ===================== TELA: LOGIN / CADASTRO ===================== -->
 <section id="tela-auth" class="tela-auth">
-  <div class="auth-cartao">
-    <img src="img/logo.png" alt="" class="auth-logo" width="64" height="64" />
-    <p class="auth-marca">Combinado</p>
-    <h1 id="auth-titulo">Entrar</h1>
+  <div class="auth-coluna">
 
-    <form id="form-auth">
-      <div class="campo">
-        <label for="input-usuario-auth">Usuário</label>
-        <input type="text" id="input-usuario-auth" placeholder="Ex.: miguel" required />
-      </div>
+    <div class="auth-marca-linha">
+      <img src="img/logo.png" alt="Logo do Combinado" class="auth-logo" width="52" height="52" />
+      <span class="auth-wordmark">Combinado</span>
+    </div>
 
-      <div class="campo">
-        <label for="input-senha-auth">Senha</label>
-        <input type="password" id="input-senha-auth" required />
-      </div>
+    <div class="auth-cartas" aria-hidden="true">
+      <div class="auth-carta auth-carta-1"><strong>Relatório de Redes</strong><span>Vence amanhã</span></div>
+      <div class="auth-carta auth-carta-2"><strong>Seminário</strong><span>Entregue</span></div>
+      <div class="auth-carta auth-carta-3"><strong>Projeto A3, em grupo</strong><span>Tarefas 2 de 4 concluídas</span></div>
+    </div>
 
-      <p id="auth-erro" class="auth-erro" hidden></p>
+    <div class="auth-cartao">
+      <h1 id="auth-titulo">Entrar</h1>
 
-      <button type="submit" class="botao botao-primario auth-botao-principal" id="btn-auth-principal">Entrar</button>
-    </form>
+      <form id="form-auth">
+        <div class="campo">
+          <label for="input-usuario-auth">Usuário</label>
+          <input type="text" id="input-usuario-auth" placeholder="Ex.: miguel" required />
+        </div>
 
-    <p class="auth-alternar">
-      <span id="auth-alternar-texto">Não tem conta?</span>
-      <button type="button" id="btn-auth-alternar" class="botao botao-texto">Criar conta</button>
-    </p>
+        <div class="campo">
+          <label for="input-senha-auth">Senha</label>
+          <input type="password" id="input-senha-auth" required />
+        </div>
+
+        <p id="auth-erro" class="auth-erro" hidden></p>
+
+        <button type="submit" class="botao botao-primario auth-botao-principal" id="btn-auth-principal">Entrar</button>
+      </form>
+
+      <p class="auth-alternar">
+        <span id="auth-alternar-texto">Não tem conta?</span>
+        <button type="button" id="btn-auth-alternar" class="botao botao-texto">Criar conta</button>
+      </p>
+    </div>
+
   </div>
 </section>
 
@@ -46,11 +60,10 @@
 
 <header class="cabecalho">
   <span class="cabecalho-marca">
-    <img src="img/logo.png" alt="" class="cabecalho-logo" width="32" height="32" />
-    Combinado
+    <img src="img/logo.png" alt="Combinado" class="cabecalho-logo" width="44" height="44" />
   </span>
   <div class="cabecalho-usuario">
-    <span id="cabecalho-usuario-nome"></span>
+    <span id="cabecalho-usuario-nome" class="cabecalho-usuario-nome"></span>
     <button type="button" id="btn-sair" class="botao botao-texto botao-sair">Sair</button>
   </div>
 </header>
@@ -70,15 +83,12 @@
   </div>
 
   <div id="filtros-barra" class="filtros-barra" hidden>
-    <div class="campo-filtro">
-      <label for="select-filtro-status">Status</label>
-      <select id="select-filtro-status">
-        <option value="">Todos os status</option>
-        <option value="nao-comecei">Não comecei</option>
-        <option value="fazendo">Fazendo</option>
-        <option value="pronto">Pronto</option>
-        <option value="entregue">Entregue</option>
-      </select>
+    <div id="abas-status" class="abas-status" role="group" aria-label="Filtrar por status">
+      <button type="button" class="aba-status" data-status="" aria-pressed="true">Todos <span class="aba-contagem">0</span></button>
+      <button type="button" class="aba-status" data-status="nao-comecei" aria-pressed="false">Não comecei <span class="aba-contagem">0</span></button>
+      <button type="button" class="aba-status" data-status="fazendo" aria-pressed="false">Fazendo <span class="aba-contagem">0</span></button>
+      <button type="button" class="aba-status" data-status="pronto" aria-pressed="false">Pronto <span class="aba-contagem">0</span></button>
+      <button type="button" class="aba-status" data-status="entregue" aria-pressed="false">Entregue <span class="aba-contagem">0</span></button>
     </div>
     <div class="campo-filtro">
       <label for="select-filtro-materia">Matéria</label>
@@ -123,14 +133,16 @@
 
     <fieldset class="campo campo-radio">
       <legend>Tipo</legend>
-      <label class="opcao-radio">
-        <input type="radio" name="tipo-trabalho" value="individual" checked />
-        Individual
-      </label>
-      <label class="opcao-radio">
-        <input type="radio" name="tipo-trabalho" value="grupo" />
-        Em grupo
-      </label>
+      <div class="opcoes-tipo">
+        <label class="opcao-tipo">
+          <input type="radio" name="tipo-trabalho" value="individual" checked />
+          <span class="opcao-tipo-corpo"><strong>Individual</strong><small>Só você faz</small></span>
+        </label>
+        <label class="opcao-tipo">
+          <input type="radio" name="tipo-trabalho" value="grupo" />
+          <span class="opcao-tipo-corpo"><strong>Em grupo</strong><small>Com tarefas por pessoa</small></span>
+        </label>
+      </div>
     </fieldset>
 
     <fieldset class="campo campo-radio">
@@ -179,9 +191,15 @@
       </div>
     </fieldset>
 
+    <div id="previa-trabalho" class="previa-trabalho" aria-hidden="true">
+      <span class="previa-rotulo">Assim vai aparecer na lista</span>
+      <span id="previa-titulo" class="previa-titulo"></span>
+      <span id="previa-meta" class="previa-meta"></span>
+    </div>
+
     <div class="dialog-acoes">
       <button type="button" class="botao botao-texto" data-fechar-dialog>Cancelar</button>
-      <button type="submit" class="botao botao-primario">Salvar</button>
+      <button type="submit" class="botao botao-primario">Salvar trabalho</button>
     </div>
   </form>
 </dialog>
@@ -189,24 +207,53 @@
 <!-- ===================== DIÁLOGO: TAREFAS DO GRUPO ===================== -->
 <dialog id="dialog-tarefas">
   <div class="dialog-tarefas-corpo">
-    <h2 id="dialog-tarefas-titulo">Tarefas</h2>
+
+    <div class="tarefas-topo">
+      <button type="button" class="botao-voltar" data-fechar-tarefas aria-label="Voltar para a lista">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"></path></svg>
+      </button>
+      <div>
+        <div class="tarefas-topo-rotulo">Tarefas de</div>
+        <h2 id="dialog-tarefas-titulo">Tarefas</h2>
+      </div>
+    </div>
+
+    <section class="tarefas-progresso" aria-live="polite">
+      <div class="tarefas-anel">
+        <svg width="84" height="84" viewBox="0 0 84 84" aria-hidden="true">
+          <circle cx="42" cy="42" r="34" fill="none" stroke="#ffffff" stroke-width="12"></circle>
+          <circle id="tarefas-anel-arco" cx="42" cy="42" r="34" fill="none" stroke="#1e1b4b" stroke-width="12" stroke-dasharray="0 213.63" transform="rotate(-90 42 42)"></circle>
+        </svg>
+        <span id="tarefas-anel-numero" class="tarefas-anel-numero">0/0</span>
+      </div>
+      <div class="tarefas-progresso-texto">
+        <span id="tarefas-progresso-titulo" class="tarefas-progresso-titulo">Nenhuma tarefa ainda</span>
+        <span class="tarefas-progresso-dica">Concluindo todas, o trabalho vai para Pronto.</span>
+      </div>
+    </section>
 
     <div class="integrantes-secao">
-      <h3 class="integrantes-titulo">Integrantes do grupo</h3>
+      <h3 class="integrantes-titulo">Integrantes</h3>
+      <ul id="lista-integrantes" class="lista-integrantes"></ul>
+      <p id="integrantes-vazio" class="integrantes-vazio" hidden>Nenhum integrante cadastrado ainda.</p>
       <form id="form-integrante" class="form-integrante">
         <div class="campo campo-integrante">
           <label for="input-integrante-nome" class="rotulo-oculto">Nome do integrante</label>
           <input type="text" id="input-integrante-nome" placeholder="Nome do integrante" />
         </div>
-        <button type="submit" class="botao botao-texto">+ Adicionar</button>
+        <button type="submit" class="botao botao-texto">Adicionar</button>
       </form>
-      <p id="integrantes-vazio" class="integrantes-vazio" hidden>Nenhum integrante cadastrado ainda.</p>
-      <ul id="lista-integrantes" class="lista-integrantes"></ul>
+    </div>
+
+    <div>
+      <h3 class="tarefas-subtitulo">Tarefas</h3>
+      <p id="tarefas-vazio" class="estado-vazio" hidden>Nenhuma tarefa ainda. Adicione a primeira abaixo.</p>
+      <ul id="lista-tarefas" class="lista-tarefas"></ul>
     </div>
 
     <form id="form-tarefa" class="form-tarefa">
       <div class="campo campo-tarefa">
-        <label for="input-tarefa-texto">Tarefa</label>
+        <label for="input-tarefa-texto">Nova tarefa</label>
         <input type="text" id="input-tarefa-texto" placeholder="Ex.: Fazer a introdução" required />
       </div>
       <div class="campo campo-tarefa">
@@ -215,27 +262,23 @@
           <option value="">Sem responsável</option>
         </select>
       </div>
-      <button type="submit" class="botao botao-primario">+ Adicionar</button>
+      <button type="submit" class="botao botao-primario">Adicionar tarefa</button>
     </form>
 
-    <p id="tarefas-vazio" class="estado-vazio" hidden>Nenhuma tarefa ainda. Adicione a primeira acima.</p>
-
-    <ul id="lista-tarefas" class="lista-tarefas"></ul>
-
-    <div class="dialog-acoes">
-      <button type="button" class="botao botao-texto" data-fechar-tarefas>Fechar</button>
-    </div>
   </div>
 </dialog>
 
 <!-- ===================== DIÁLOGO: CONFIRMAÇÃO DE EXCLUSÃO ===================== -->
 <dialog id="dialog-confirmar">
   <div class="dialog-confirmar-corpo">
+    <div class="confirmar-icone" aria-hidden="true">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#1e1b4b" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v5M14 11v5"></path></svg>
+    </div>
     <h2 id="dialog-confirmar-titulo">Excluir trabalho?</h2>
     <p id="dialog-confirmar-texto"></p>
-    <div class="dialog-acoes">
+    <div class="dialog-acoes dialog-acoes-confirmar">
       <button type="button" class="botao botao-texto" data-fechar-confirmar>Cancelar</button>
-      <button type="button" id="btn-confirmar-exclusao" class="botao botao-perigo">Excluir</button>
+      <button type="button" id="btn-confirmar-exclusao" class="botao botao-perigo">Excluir trabalho</button>
     </div>
   </div>
 </dialog>

@@ -99,7 +99,7 @@ const { chromium } = require('playwright');
   await page.locator('.trabalho-card >> nth=0 >> text=Excluir').click();
   await page.waitForTimeout(100);
   check('diálogo de confirmação abre', await page.isVisible('#dialog-confirmar'));
-  check('texto cita o título certo', (await page.locator('#dialog-confirmar-texto').textContent()).includes('revisado'));
+  check('texto cita o título certo', (await page.locator('#dialog-confirmar-titulo').textContent()).includes('revisado'));
   await page.click('[data-fechar-confirmar]');
   await page.waitForTimeout(100);
   check('cancelar não apaga', (await page.locator('.trabalho-card').count()) === 2);

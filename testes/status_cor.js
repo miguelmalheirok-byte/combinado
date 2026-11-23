@@ -24,6 +24,8 @@ const { chromium } = require('playwright');
   console.log('=== LOGO ===');
   const logoCab = await page.locator('.cabecalho-logo').evaluate((img) => img.complete && img.naturalWidth > 0);
   check('logo aparece no cabeçalho', logoCab);
+  const fonteTitulo = await page.evaluate(() => document.fonts.ready.then(() => document.fonts.check('800 20px "Bricolage Grotesque"')));
+  check('fonte dos títulos (Bricolage Grotesque) carregada do próprio site', fonteTitulo);
   const favicon = await page.locator('link[rel="icon"]').getAttribute('href');
   check('favicon aponta para a logo', favicon === 'img/logo.png');
 
@@ -61,28 +63,48 @@ const { chromium } = require('playwright');
   check('lista sempre por prazo mais próximo (T4, T2, T1, T3)',
     t[0].startsWith('T4') && t[1].startsWith('T2') && t[2].startsWith('T1') && t[3].startsWith('T3'));
 
-  console.log('=== FILTRAR POR STATUS ===');
-  await page.selectOption('#select-filtro-status', 'pronto');
+  console.log('=== FILTRAR POR STATUS (abas) ===');
+  const aba = (st) => page.locator('#abas-status .aba-status[data-status="' + st + '"]').click();
+  const contagens = await page.locator('#abas-status .aba-contagem').allTextContents();
+  check('abas mostram contagem por status (4, 1, 1, 1, 1)', JSON.stringify(contagens) === JSON.stringify(['4', '1', '1', '1', '1']));
+  check('aba "Todos" começa selecionada', (await page.locator('#abas-status .aba-status[data-status=""]').getAttribute('aria-pressed')) === 'true');
+  await aba('pronto');
   t = await titulos();
   check('filtro "Pronto" mostra só 1 trabalho', t.length === 1 && t[0].startsWith('T2'));
-  await page.selectOption('#select-filtro-status', 'entregue');
+  check('aba "Pronto" fica marcada e "Todos" desmarca',
+    (await page.locator('#abas-status .aba-status[data-status="pronto"]').getAttribute('aria-pressed')) === 'true' &&
+    (await page.locator('#abas-status .aba-status[data-status=""]').getAttribute('aria-pressed')) === 'false');
+  await aba('entregue');
   t = await titulos();
   check('filtro "Entregue" mostra só 1 trabalho', t.length === 1 && t[0].startsWith('T1'));
-  await page.selectOption('#select-filtro-status', 'fazendo');
+  await aba('fazendo');
   await page.selectOption('#select-filtro-materia', 'Redes');
   check('filtros combinados sem resultado mostram aviso',
     (await page.textContent('#lista-vazia')).includes('Nenhum trabalho encontrado') && await page.isVisible('#lista-vazia'));
   await page.selectOption('#select-filtro-materia', '');
-  await page.selectOption('#select-filtro-status', '');
+  await aba('');
   check('limpar filtros volta aos 4 trabalhos', (await titulos()).length === 4);
 
   console.log('=== COR DO CARD ===');
   check('card T1 azul', (await card('T1').getAttribute('data-cor')) === 'azul');
   check('card T2 sem cor não tem data-cor', (await card('T2').getAttribute('data-cor')) === null);
-  const borda = (c) => card(c).evaluate((el) => getComputedStyle(el).borderLeftColor);
-  check('cor azul aplicada na faixa', (await borda('T1')) === 'rgb(47, 111, 181)');
-  check('card vermelho com faixa diferente do azul', (await borda('T3')) !== (await borda('T1')));
-  check('sem cor, faixa segue o status (pronto = azul de status)', (await borda('T2')) === 'rgb(47, 111, 181)');
+  const fundo = (c) => card(c).evaluate((el) => getComputedStyle(el).backgroundColor);
+  check('card azul pintado de azul (#8db8ff)', (await fundo('T1')) === 'rgb(141, 184, 255)');
+  check('card vermelho com cor diferente do azul', (await fundo('T3')) !== (await fundo('T1')));
+  check('card vermelho pintado de #ff8a80', (await fundo('T3')) === 'rgb(255, 138, 128)');
+  check('sem cor, card fica branco', (await fundo('T2')) === 'rgb(255, 255, 255)');
+
+  console.log('=== SELO DE DATA ===');
+  check('card com prazo mostra selo de data "Prazo 10/01"', (await card('T1').locator('.selo-data').textContent()) === 'Prazo 10/01');
+  check('título do card não carrega mais selos', (await card('T1').locator('.trabalho-titulo').textContent()) === 'T1');
+
+  console.log('=== PRÉVIA NO FORMULÁRIO ===');
+  await page.click('#btn-novo-trabalho');
+  await page.fill('#input-titulo-trabalho', 'Prévia X');
+  await page.locator('.opcao-cor[data-cor="rosa"]').click();
+  check('prévia mostra o título digitado', (await page.textContent('#previa-titulo')) === 'Prévia X');
+  check('prévia muda para a cor escolhida', (await page.locator('#previa-trabalho').getAttribute('data-cor')) === 'rosa');
+  await page.click('[data-fechar-dialog]');
 
   // editar: cor vem marcada e pode ser trocada
   await card('T3').locator('button:has-text("Editar")').click();
