@@ -1,5 +1,5 @@
 Resultados dos testes automatizados do Combinado
-Data da execução: 16/11/2026 23:52 (UTC)
+Data da execução: 23/11/2026 17:33 (UTC)
 Ferramenta: Playwright (Chromium headless), app servido localmente em http://localhost:8799
 
 ================ testes/login.js ================
@@ -150,6 +150,24 @@ OK   - tarefa adicionada via teclado + select (sem mouse no texto)
 --- total de checagens: 21 ---
 --- erros de console: 0 ---
 
+================ testes/tarefas_status.js ================
+OK   - sem tarefas concluídas, status continua "Não comecei"
+OK   - uma de duas concluída: não muda para pronto
+OK   - todas concluídas: vai para "Pronto"
+OK   - select do card mostra "Pronto"
+OK   - reabrir uma tarefa volta para "Fazendo"
+OK   - concluir de novo volta para "Pronto"
+OK   - adicionar tarefa nova volta para "Fazendo"
+OK   - excluir a única pendente leva para "Pronto"
+OK   - trabalho "Entregue" não é alterado pelas tarefas
+OK   - "Pronto" marcado à mão não é desfeito ao adicionar tarefa
+OK   - grupo sem tarefas continua "Não comecei"
+OK   - de "Fazendo" também vai para "Pronto"
+OK   - após recarregar, status "Pronto" continua
+OK   - pronto não conta como entregue
+--- total de checagens: 14 ---
+--- erros de console: 0 ---
+
 ================ testes/integrantes.js ================
 OK   - lista de integrantes comeca vazia
 OK   - select de responsavel comeca so com "Sem responsavel"
@@ -190,14 +208,13 @@ OK   - apos reload, o backfill persistiu de verdade no localStorage
 OK   - barra de filtros escondida com lista vazia
 OK   - barra de filtros aparece com trabalhos
 OK   - ordem padrao por prazo (proximo primeiro, sem prazo por ultimo)
-OK   - ordenar nao tem mais A-Z e tem "Status"
-OK   - ordenar por mais recentes primeiro
+OK   - nao existe mais o seletor "Ordenar por"
 OK   - select de materia tem as 3 materias + todas
 OK   - filtro por materia mostra so os 2 da materia escolhida
 OK   - voltando pra "todas as materias" mostra os 4 de novo
 OK   - materia sem nenhum trabalho some da lista de filtro
 OK   - apos reload, restam os 2 trabalhos nao excluidos
---- total de checagens: 10 ---
+--- total de checagens: 9 ---
 --- erros de console: 0 ---
 
 ================ testes/lembrete.js ================
@@ -239,8 +256,8 @@ OK   - select de status tem 4 opções na ordem certa
 OK   - status "pronto" gravado no card
 OK   - select do card mostra "Pronto"
 OK   - pronto não conta como entregue na barra
-=== ORDENAR POR STATUS ===
-OK   - ordem: Não comecei, Fazendo, Pronto, Entregue
+=== ORDEM DA LISTA ===
+OK   - lista sempre por prazo mais próximo (T4, T2, T1, T3)
 === FILTRAR POR STATUS ===
 OK   - filtro "Pronto" mostra só 1 trabalho
 OK   - filtro "Entregue" mostra só 1 trabalho

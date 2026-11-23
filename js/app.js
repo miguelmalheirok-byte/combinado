@@ -164,9 +164,6 @@
     "entregue": "Entregue"
   };
 
-  // ordem do fluxo de um trabalho: usada na ordenação por status
-  var STATUS_ORDEM = ["nao-comecei", "fazendo", "pronto", "entregue"];
-
   var CORES_VALIDAS = ["vermelho", "laranja", "amarelo", "verde", "azul", "roxo", "rosa"];
 
   var TIPO_LABEL = {
@@ -220,21 +217,14 @@
   var progressoBarra = document.getElementById("progresso-barra");
   var progressoBarraPreenchida = document.getElementById("progresso-barra-preenchida");
   var filtrosBarra = document.getElementById("filtros-barra");
-  var selectOrdenar = document.getElementById("select-ordenar");
   var selectFiltroMateria = document.getElementById("select-filtro-materia");
   var selectFiltroStatus = document.getElementById("select-filtro-status");
 
   var TEXTO_LISTA_VAZIA = 'Nenhum trabalho cadastrado ainda. Toque em "Novo trabalho" para começar.';
   var TEXTO_LISTA_SEM_RESULTADO = "Nenhum trabalho encontrado com esse filtro.";
 
-  var ordenacaoAtual = "prazo";
   var filtroMateriaAtual = "";
   var filtroStatusAtual = "";
-
-  selectOrdenar.addEventListener("change", function () {
-    ordenacaoAtual = selectOrdenar.value;
-    renderTrabalhos();
-  });
 
   selectFiltroMateria.addEventListener("change", function () {
     filtroMateriaAtual = selectFiltroMateria.value;
@@ -440,17 +430,8 @@
              (!filtroStatusAtual || t.status === filtroStatusAtual);
     });
 
-    if (ordenacaoAtual === "status") {
-      // por etapa do fluxo; dentro da mesma etapa, prazo mais próximo primeiro
-      filtrados.sort(function (a, b) {
-        var diferenca = STATUS_ORDEM.indexOf(a.status) - STATUS_ORDEM.indexOf(b.status);
-        return diferenca !== 0 ? diferenca : compararPorPrazo(a, b);
-      });
-    } else if (ordenacaoAtual === "recentes") {
-      filtrados.reverse();
-    } else {
-      filtrados.sort(compararPorPrazo);
-    }
+    // sempre pelo prazo mais próximo; trabalhos sem prazo vão para o fim
+    filtrados.sort(compararPorPrazo);
 
     return filtrados;
   }
@@ -547,6 +528,7 @@
       });
       selectStatus.addEventListener("change", function () {
         trabalho.status = selectStatus.value;
+        trabalho.prontoAutomatico = false;
         salvarEstado();
         renderTrabalhos();
       });
@@ -616,6 +598,25 @@
     }
 
     return true;
+  }
+
+  // Quando todas as tarefas do trabalho em grupo estão concluídas, o trabalho vai para "Pronto".
+  // Se depois uma tarefa for reaberta ou entrar uma nova, volta para "Fazendo" (só quando foi o
+  // próprio app que moveu para Pronto; um "Pronto" marcado à mão não é desfeito). "Entregue"
+  // nunca é alterado automaticamente.
+  function aplicarStatusPelasTarefas(trabalho) {
+    var tarefas = Array.isArray(trabalho.tarefas) ? trabalho.tarefas : [];
+    var todasFeitas = tarefas.length > 0 && tarefas.every(function (t) { return t.feito; });
+
+    if (todasFeitas) {
+      if (trabalho.status === "nao-comecei" || trabalho.status === "fazendo") {
+        trabalho.status = "pronto";
+        trabalho.prontoAutomatico = true;
+      }
+    } else if (trabalho.status === "pronto" && trabalho.prontoAutomatico) {
+      trabalho.status = "fazendo";
+      trabalho.prontoAutomatico = false;
+    }
   }
 
   var dialogTarefas = document.getElementById("dialog-tarefas");
@@ -750,6 +751,7 @@
       checkbox.setAttribute("aria-label", "Marcar '" + tarefa.texto + "' como concluída");
       checkbox.addEventListener("change", function () {
         tarefa.feito = checkbox.checked;
+        aplicarStatusPelasTarefas(trabalhoTarefasAtual);
         salvarEstado();
         renderTarefas();
         renderTrabalhos();
@@ -778,6 +780,7 @@
         trabalhoTarefasAtual.tarefas = trabalhoTarefasAtual.tarefas.filter(function (t) {
           return t.id !== tarefa.id;
         });
+        aplicarStatusPelasTarefas(trabalhoTarefasAtual);
         salvarEstado();
         renderTarefas();
         renderTrabalhos();
@@ -804,6 +807,7 @@
       feito: false
     });
 
+    aplicarStatusPelasTarefas(trabalhoTarefasAtual);
     salvarEstado();
     formTarefa.reset();
     renderTarefas();

@@ -2,7 +2,7 @@
 
 Esta pasta guarda os testes que usamos para conferir as funcionalidades do Combinado a cada mudança. Eles abrem o app num navegador de verdade (Chromium, via Playwright), clicam e preenchem os campos como uma pessoa faria e conferem se o resultado está certo. Também registram qualquer erro que apareça no console do navegador.
 
-O resultado da última execução completa está em `resultados.txt`, na raiz do repositório: 11 roteiros, 137 checagens aprovadas, nenhuma falha e nenhum erro de console.
+O resultado da última execução completa está em `resultados.txt`, na raiz do repositório: 12 roteiros, 150 checagens aprovadas, nenhuma falha e nenhum erro de console.
 
 ## O que cada arquivo testa
 
@@ -12,11 +12,12 @@ O resultado da última execução completa está em `resultados.txt`, na raiz do
 | `editar.js` | Edição de trabalho, cancelar sem alterar nada e persistência depois de recarregar |
 | `completo.js` | Fluxo geral: criar, mudar status, editar, excluir com confirmação e acessibilidade básica |
 | `tarefas.js` | Divisão de tarefas em trabalhos em grupo, contador, marcar como feita, excluir e uso só por teclado |
+| `tarefas_status.js` | Trabalho em grupo vai para "Pronto" quando todas as tarefas são concluídas, volta para "Fazendo" se reabrir/adicionar tarefa, e "Entregue" nunca é alterado |
 | `integrantes.js` | Cadastro e remoção de integrantes do grupo e escolha do responsável na lista |
 | `integrantes_card.js` | Integrantes aparecendo direto no card da tela principal |
 | `backfill_integrantes.js` | Trabalhos antigos que já tinham responsável nas tarefas ganhando a lista de integrantes |
-| `filtros.js` | Ordenar por prazo e mais recentes, e filtrar por matéria |
-| `status_cor.js` | Logo, status "Pronto", ordenar e filtrar por status, cor do card (escolher, trocar, remover) e dados antigos sem cor |
+| `filtros.js` | Lista ordenada por prazo e filtro por matéria |
+| `status_cor.js` | Logo, status "Pronto", filtrar por status, cor do card (escolher, trocar, remover) e dados antigos sem cor |
 | `lembrete.js` | Avisos de prazo: atrasado, vence hoje, amanhã e em 3 dias |
 | `progresso.js` | Indicador de trabalhos entregues e barra de progresso |
 

@@ -55,12 +55,11 @@ const { chromium } = require('playwright');
   check('select do card mostra "Pronto"', (await card('T2').locator('select').inputValue()) === 'pronto');
   check('pronto não conta como entregue na barra', (await page.textContent('#progresso-texto')) === '1 de 4 trabalhos entregues');
 
-  console.log('=== ORDENAR POR STATUS ===');
+  console.log('=== ORDEM DA LISTA ===');
   const titulos = () => page.locator('#lista-trabalhos .trabalho-titulo').allTextContents();
-  await page.selectOption('#select-ordenar', 'status');
   let t = await titulos();
-  check('ordem: Não comecei, Fazendo, Pronto, Entregue',
-    t[0].startsWith('T4') && t[1].startsWith('T3') && t[2].startsWith('T2') && t[3].startsWith('T1'));
+  check('lista sempre por prazo mais próximo (T4, T2, T1, T3)',
+    t[0].startsWith('T4') && t[1].startsWith('T2') && t[2].startsWith('T1') && t[3].startsWith('T3'));
 
   console.log('=== FILTRAR POR STATUS ===');
   await page.selectOption('#select-filtro-status', 'pronto');

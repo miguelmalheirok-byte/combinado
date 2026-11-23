@@ -53,17 +53,8 @@ const { chromium } = require('playwright');
     titulos[3].startsWith('Trabalho C')
   );
 
-  // a opcao "Titulo (A-Z)" foi trocada por ordenacao por status
-  const opcoesOrdenar = await page.locator('#select-ordenar option').allTextContents();
-  check('ordenar nao tem mais A-Z e tem "Status"', opcoesOrdenar.includes('Status') && !opcoesOrdenar.some((o) => o.includes('A-Z')));
-
-  // ordenar por mais recentes primeiro (ultimo criado = Trabalho D)
-  await page.selectOption('#select-ordenar', 'recentes');
-  titulos = await titulosNaTela();
-  check('ordenar por mais recentes primeiro', titulos[0].startsWith('Trabalho D') && titulos[3].startsWith('Trabalho C'));
-
-  // volta pra ordenacao por prazo antes de testar filtro
-  await page.selectOption('#select-ordenar', 'prazo');
+  // o seletor "Ordenar por" foi removido: a lista fica sempre por prazo
+  check('nao existe mais o seletor "Ordenar por"', (await page.locator('#select-ordenar').count()) === 0);
 
   // filtro por materia
   const opcoesMateria = await page.locator('#select-filtro-materia option').allTextContents();
