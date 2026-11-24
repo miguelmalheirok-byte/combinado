@@ -16,7 +16,7 @@ A lista de trabalhos fica sempre ordenada pelo prazo mais próximo e pode ser fi
 
 ## Melhorias a partir do teste com usuários
 
-Em novembro de 2026 o app foi testado com 3 estudantes (notebook, Android e iPhone). Os problemas mais citados viraram mudanças: trabalhos em grupo sem tarefas mostram uma dica de próximo passo e o botão Tarefas fica em destaque; o filtro por matéria ganhou ícone e o rótulo "Filtrar por matéria"; o formulário passou a dizer "Nome do trabalho" e "Matéria (disciplina)", e os botões Cancelar e Salvar ficam sempre visíveis, mesmo em tela de celular baixa.
+Em novembro de 2026 o app foi testado com 3 estudantes (notebook, Android e iPhone). Os problemas mais citados viraram mudanças: trabalhos em grupo sem tarefas mostram uma dica de próximo passo e o botão Tarefas fica em destaque; o filtro por matéria ganhou ícone e o rótulo "Filtrar por matéria"; o formulário passou a dizer "Nome do trabalho" e "Matéria (disciplina)", e os botões Cancelar e Salvar ficam sempre visíveis, mesmo em tela de celular baixa. Num reteste, outra pessoa tentou escolher o responsável de uma tarefa antes de cadastrar os integrantes; agora a tela de Tarefas avisa a ordem e tem um botão que leva direto ao campo dos integrantes.
 
 ## Visual
 

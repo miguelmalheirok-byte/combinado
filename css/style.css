@@ -986,3 +986,23 @@ dialog h2 {
 #dialog-trabalho { padding-bottom: 0; }
 
 :root[data-tema="escuro"] .trabalho-card[data-cor] .trabalho-dica { border-color: #1e1b4b; }
+
+/* aviso: cadastrar integrantes antes de escolher o responsável (reteste de 24/11) */
+.aviso-responsavel {
+  margin-top: 8px;
+  padding: 10px 12px;
+  border: var(--borda);
+  border-radius: 14px;
+  background: var(--destaque);
+  color: #1e1b4b;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.35;
+}
+.aviso-responsavel .botao-texto {
+  display: block;
+  min-height: 44px;
+  padding: 6px 0 0;
+  color: #1e1b4b;
+  text-align: left;
+}

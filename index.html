@@ -259,11 +259,11 @@
     <div class="integrantes-secao">
       <h3 class="integrantes-titulo">Integrantes</h3>
       <ul id="lista-integrantes" class="lista-integrantes"></ul>
-      <p id="integrantes-vazio" class="integrantes-vazio" hidden>Nenhum integrante cadastrado ainda.</p>
+      <p id="integrantes-vazio" class="integrantes-vazio" hidden>Nenhum integrante cadastrado ainda. Cadastre os integrantes primeiro; depois escolha o responsável de cada tarefa.</p>
       <form id="form-integrante" class="form-integrante">
         <div class="campo campo-integrante">
           <label for="input-integrante-nome" class="rotulo-oculto">Nome do integrante</label>
-          <input type="text" id="input-integrante-nome" placeholder="Nome do integrante" />
+          <input type="text" id="input-integrante-nome" placeholder="Nome" />
         </div>
         <button type="submit" class="botao botao-texto">Adicionar</button>
       </form>
@@ -285,6 +285,10 @@
         <select id="input-tarefa-responsavel">
           <option value="">Sem responsável</option>
         </select>
+        <div id="aviso-responsavel" class="aviso-responsavel" role="status" hidden>
+          <span>Para escolher o responsável, cadastre antes os integrantes do grupo.</span>
+          <button type="button" id="btn-ir-integrantes" class="botao botao-texto">Cadastrar integrantes</button>
+        </div>
       </div>
       <button type="submit" class="botao botao-primario">Adicionar tarefa</button>
     </form>

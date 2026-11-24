@@ -1,5 +1,5 @@
 Resultados dos testes automatizados do Combinado
-Data da execução: 23/11/2026 20:44 (UTC)
+Data da execução: 24/11/2026 15:36 (UTC)
 Ferramenta: Playwright (Chromium headless), app servido localmente em http://localhost:8799
 
 ================ testes/login.js ================
@@ -359,6 +359,15 @@ OK   - contador de tarefas continua no botão (0/1)
 OK   - rótulo do filtro diz "Filtrar por matéria"
 OK   - rótulo do filtro tem ícone de funil
 OK   - filtrar por matéria continua funcionando
---- total de checagens: 14 ---
+=== RETESTE: AVISO DE INTEGRANTES ANTES DO RESPONSÁVEL ===
+OK   - grupo sem integrantes mostra o aviso ao lado do campo Responsável
+OK   - o aviso fala em cadastrar os integrantes
+OK   - o campo Responsável aponta para o aviso (leitor de tela)
+OK   - texto de "nenhum integrante" explica a ordem
+OK   - botão "Cadastrar integrantes" leva o foco ao campo do nome
+OK   - depois de cadastrar um integrante o aviso some
+OK   - e o integrante aparece como opção de responsável
+OK   - removendo o último integrante o aviso volta
+--- total de checagens: 22 ---
 --- erros de console: 0 ---
 

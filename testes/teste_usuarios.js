@@ -2,6 +2,7 @@
 // 1) dica e destaque para dividir tarefas em trabalho em grupo
 // 2) filtro por matéria mais fácil de achar
 // 3) rótulos do formulário (nome do trabalho x matéria) e botão de salvar sempre visível no celular
+// 4) reteste de 24/11: aviso para cadastrar integrantes antes de escolher o responsável da tarefa
 const { chromium } = require('playwright');
 
 (async () => {
@@ -74,6 +75,23 @@ const { chromium } = require('playwright');
   await page.selectOption('#select-filtro-materia', 'Sistemas Distribuídos');
   const titulos = await page.locator('#lista-trabalhos .trabalho-titulo').allTextContents();
   check('filtrar por matéria continua funcionando', titulos.length === 1 && titulos[0] === 'Projeto A3');
+
+  console.log('=== RETESTE: AVISO DE INTEGRANTES ANTES DO RESPONSÁVEL ===');
+  await page.selectOption('#select-filtro-materia', '');
+  await cardGrupo.locator('button:has-text("Tarefas")').click();
+  check('grupo sem integrantes mostra o aviso ao lado do campo Responsável', await page.isVisible('#aviso-responsavel'));
+  check('o aviso fala em cadastrar os integrantes', (await page.textContent('#aviso-responsavel')).includes('cadastre antes os integrantes'));
+  check('o campo Responsável aponta para o aviso (leitor de tela)', (await page.getAttribute('#input-tarefa-responsavel', 'aria-describedby')) === 'aviso-responsavel');
+  check('texto de "nenhum integrante" explica a ordem', (await page.textContent('#integrantes-vazio')).includes('depois escolha o responsável'));
+  await page.click('#btn-ir-integrantes');
+  check('botão "Cadastrar integrantes" leva o foco ao campo do nome', await page.evaluate(() => document.activeElement && document.activeElement.id === 'input-integrante-nome'));
+  await page.fill('#input-integrante-nome', 'Miguel');
+  await page.click('#form-integrante button');
+  check('depois de cadastrar um integrante o aviso some', await page.isHidden('#aviso-responsavel'));
+  check('e o integrante aparece como opção de responsável', (await page.locator('#input-tarefa-responsavel option').allTextContents()).includes('Miguel'));
+  await page.locator('#lista-integrantes li.integrante-chip').filter({ hasText: 'Miguel' }).locator('button').click();
+  check('removendo o último integrante o aviso volta', await page.isVisible('#aviso-responsavel'));
+  await page.click('#dialog-tarefas [data-fechar-tarefas]');
 
   console.log('--- total de checagens: ' + checks + ' ---');
   console.log('--- erros de console: ' + erros.length + ' ---');

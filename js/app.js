@@ -740,6 +740,13 @@
   var integrantesVazio = document.getElementById("integrantes-vazio");
 
   var trabalhoTarefasAtual = null;
+  var avisoResponsavel = document.getElementById("aviso-responsavel");
+  var btnIrIntegrantes = document.getElementById("btn-ir-integrantes");
+
+  btnIrIntegrantes.addEventListener("click", function () {
+    inputIntegranteNome.scrollIntoView({ block: "center" });
+    inputIntegranteNome.focus();
+  });
 
   var tarefasAnelArco = document.getElementById("tarefas-anel-arco");
   var tarefasAnelNumero = document.getElementById("tarefas-anel-numero");
@@ -804,6 +811,15 @@
 
     if (integrantes.indexOf(selecionadoAntes) !== -1) {
       inputTarefaResponsavel.value = selecionadoAntes;
+    }
+
+    // sem integrantes, o campo só tem "Sem responsável": avisa a ordem certa
+    var semIntegrantes = integrantes.length === 0;
+    avisoResponsavel.hidden = !semIntegrantes;
+    if (semIntegrantes) {
+      inputTarefaResponsavel.setAttribute("aria-describedby", "aviso-responsavel");
+    } else {
+      inputTarefaResponsavel.removeAttribute("aria-describedby");
     }
   }
 
