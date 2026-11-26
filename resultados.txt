@@ -1,10 +1,51 @@
 Resultados dos testes automatizados do Combinado
-Data da execução: 26/11/2026 15:32 (UTC)
+Data da execução: 26/11/2026 16:03 (UTC)
 Ferramenta: Playwright (Chromium headless), app servido localmente em http://localhost:8799, com o Supabase de mentira (testes/fake_supabase.js)
+
+================ testes/avisos_confirmacoes.js ================
+OK   - senha começa escondida
+OK   - "Mostrar" revela a senha e vira "Ocultar"
+OK   - o que foi digitado é mantido ao mostrar
+OK   - "Ocultar" esconde de novo
+OK   - trocar entre Entrar e Criar conta esconde a senha de novo
+OK   - criar conta: dica fala em anotar a senha
+OK   - entrar: dica diz que não há recuperação de senha
+OK   - login errado sugere tocar em Mostrar para conferir
+OK   - depois de entrar, a senha digitada não fica no campo e o campo volta escondido
+OK   - erro de gravação aparece
+OK   - o erro continua na tela mesmo depois da recarga (antes sumia em milissegundos)
+OK   - a alteração que falhou foi desfeita na tela (o servidor manda)
+OK   - offline: o aviso diz que a alteração não foi salva
+OK   - offline: o aviso continua visível e explica que será desfeita
+OK   - offline: não promete mais "vamos tentar de novo" para a alteração perdida
+OK   - ao voltar a conexão: avisa que as alterações foram desfeitas
+OK   - ao voltar a conexão: o status voltou ao valor salvo
+OK   - o aviso de alterações desfeitas fica alguns segundos
+OK   - só carga offline: aparece "Sem conexão com o servidor"
+OK   - com a rede de volta, o aviso de conexão some sozinho
+OK   - faixa dentro da janela de Tarefas começa escondida
+OK   - o erro aparece dentro da janela de Tarefas
+OK   - a tarefa boa foi salva
+OK   - excluir tarefa abre confirmação com o nome da tarefa
+OK   - a tarefa ainda está na lista enquanto a confirmação está aberta
+OK   - cancelar mantém a tarefa
+OK   - confirmar exclui a tarefa
+OK   - botão "×" tem área de toque de pelo menos 44 px
+OK   - remover integrante abre confirmação com o nome
+OK   - o integrante continua na lista enquanto a confirmação está aberta
+OK   - cancelar mantém o integrante
+OK   - confirmar remove o integrante
+OK   - ao reabrir com sessão: aparece "Carregando…" em vez de tela em branco
+OK   - a tela de carregando some quando o app abre
+OK   - abrir sem internet com sessão: explica "Sem conexão" em vez de cair no login
+OK   - com a conexão de volta, "Tentar de novo" abre o app já logado
+OK   - sem tocar em nada, a abertura tenta sozinha e entra quando a rede volta
+OK   - sem sessão, abre direto no login (sem ficar em "Carregando…")
+OK   - nenhum erro inesperado no console
 
 ================ testes/contas_grupos.js ================
 OK   - abre na tela de login
-OK   - dicas de cadastro escondidas no login
+OK   - login: dica de usuário escondida e dica de "sem recuperação" visível
 OK   - dicas de usuário e senha aparecem ao criar conta
 OK   - usuário com espaço é recusado com mensagem clara
 OK   - senha curta é recusada com mensagem clara
@@ -86,7 +127,7 @@ app-principal visível: false
 titulo auth: Entrar
 --- tenta entrar com usuário que não existe ---
 erro visível (usuário não existe): true
-texto erro: Usuário ou senha incorretos.
+texto erro: Usuário ou senha incorretos. Toque em Mostrar para conferir a senha.
 ainda na tela de login: true
 --- alterna pra criar conta ---
 titulo agora: Criar conta
@@ -108,7 +149,7 @@ total trabalhos samuel: 0
 --- sai e entra com miguel de novo: trabalho dele ainda está lá ---
 total trabalhos miguel (persistiu): 1
 --- senha errada pro miguel ---
-erro senha errada: Usuário ou senha incorretos.
+erro senha errada: Usuário ou senha incorretos. Toque em Mostrar para conferir a senha.
 continua na tela de login: true
 --- recarrega a página logado: sessão persiste (auto-login) ---
 depois do reload, já entrou direto (app visível): true

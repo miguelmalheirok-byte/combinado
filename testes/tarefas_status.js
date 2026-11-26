@@ -70,6 +70,7 @@ const { paginaComFake, novoContexto, calmo, cadastrar, entrar, novoTrabalho } = 
   check('adicionar tarefa nova volta para "Fazendo"', (await status('Projeto A')) === 'fazendo');
   // excluir a pendente conclui o conjunto
   await page.locator('#lista-tarefas .tarefa-item').nth(2).locator('button:has-text("Excluir")').click();
+  await page.click('#btn-confirmar-exclusao');
   check('excluir a única pendente leva para "Pronto"', (await status('Projeto A')) === 'pronto');
   await fecharTarefas();
 

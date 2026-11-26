@@ -20,6 +20,10 @@ A lista de trabalhos fica sempre ordenada pelo prazo mais próximo e pode ser fi
 
 Em novembro de 2026 o app foi testado com 3 estudantes (notebook, Android e iPhone). Os problemas mais citados viraram mudanças: trabalhos em grupo sem tarefas mostram uma dica de próximo passo e o botão Tarefas fica em destaque; o filtro por matéria ganhou ícone e o rótulo "Filtrar por matéria"; o formulário passou a dizer "Nome do trabalho" e "Matéria (disciplina)", e os botões Cancelar e Salvar ficam sempre visíveis, mesmo em tela de celular baixa. Num reteste, outra pessoa tentou escolher o responsável de uma tarefa antes de cadastrar os integrantes. Isso foi resolvido de vez com o login de verdade: não há mais cadastro de integrantes à mão, e o campo Responsável só oferece quem já entrou no grupo pelo código.
 
+## Melhorias a partir da avaliação de Nielsen
+
+Em 26/11/2026 o app foi avaliado contra as 10 heurísticas de usabilidade de Nielsen (um avaliador, código e testes com Supabase de mentira). Os sete problemas mais graves foram corrigidos: o aviso de erro de gravação não some mais sozinho; alterações feitas sem conexão e depois desfeitas pelo servidor agora são avisadas; o aviso também aparece dentro da janela de Tarefas; a tela de login ganhou o botão "Mostrar senha" e a dica de que não há recuperação de senha; excluir tarefa e remover integrante pedem confirmação (e o "×" tem área de toque de 44 px); abrir o app mostra "Carregando…" e, sem internet, explica "Sem conexão" e tenta de novo em vez de cair no login.
+
 ## Visual
 
 O visual segue a direção "Quadro": fundo lilás, contornos grossos em azul-escuro, sombras sólidas e cards coloridos. Os títulos usam a fonte Bricolage Grotesque e o texto usa Instrument Sans, ambas open source (licença SIL OFL) e hospedadas na pasta `fonts/` do próprio projeto, sem depender de serviço externo. Há também um tema escuro: na primeira visita o app segue a preferência do aparelho, e o botão com lua/sol no cabeçalho alterna entre claro e escuro, lembrando a escolha no navegador.

@@ -21,7 +21,7 @@ const { abrirNavegador, novoContexto, vigiar, calmo, cadastrar, entrar, novoTrab
   await A.goto(URL_APP);
   await A.waitForSelector('#tela-auth:not([hidden])');
   check('abre na tela de login', await A.isVisible('#tela-auth') && !(await A.isVisible('#app-principal')));
-  check('dicas de cadastro escondidas no login', await A.isHidden('#auth-dica-usuario') && await A.isHidden('#auth-dica-senha'));
+  check('login: dica de usuário escondida e dica de "sem recuperação" visível', await A.isHidden('#auth-dica-usuario') && await A.isVisible('#auth-dica-senha') && /recupera/.test(await A.locator('#auth-dica-senha').textContent()));
 
   await A.click('#btn-auth-alternar');
   check('dicas de usuário e senha aparecem ao criar conta', await A.isVisible('#auth-dica-usuario') && await A.isVisible('#auth-dica-senha'));
@@ -156,6 +156,7 @@ const { abrirNavegador, novoContexto, vigiar, calmo, cadastrar, entrar, novoTrab
   check('o rascunho da edição continua intacto e com o foco', (await A.inputValue('#input-editar-tarefa-texto')) === 'Rascunho em andamento' && await A.evaluate(() => document.activeElement.id === 'input-editar-tarefa-texto'));
   await A.keyboard.press('Escape');
   await A.locator('#lista-tarefas li.tarefa-item').nth(1).locator('button:has-text("Excluir")').click();
+  await A.click('#btn-confirmar-exclusao');
   await calmo(A);
   check('Ana apaga a tarefa extra; sobra só a primeira', (await A.locator('#lista-tarefas li').count()) === 1);
 
@@ -207,6 +208,7 @@ const { abrirNavegador, novoContexto, vigiar, calmo, cadastrar, entrar, novoTrab
   check('Ana vê 3 integrantes ao vivo', await ate(A, () => document.querySelectorAll('#lista-integrantes li').length === 3));
 
   await A.locator('#lista-integrantes button[aria-label="Remover caio do grupo"]').click();
+  await A.click('#btn-confirmar-exclusao');
   await calmo(A);
   check('Ana removeu o Caio', await ate(A, () => document.querySelectorAll('#lista-integrantes li').length === 2));
   check('o Caio perde o trabalho ao vivo', await ate(C, () => document.querySelectorAll('.trabalho-card').length === 0));

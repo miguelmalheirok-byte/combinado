@@ -29,6 +29,13 @@
 </head>
 <body>
 
+<!-- ===================== TELA: CARREGANDO / SEM CONEXÃO NA ABERTURA ===================== -->
+<section id="tela-carregando" class="tela-carregando" role="status" aria-live="polite">
+  <img src="img/logo.png" alt="" class="auth-logo" width="52" height="52" />
+  <p id="carregando-texto" class="carregando-texto">Carregando…</p>
+  <button type="button" id="btn-carregando-tentar" class="botao botao-secundario" hidden>Tentar de novo</button>
+</section>
+
 <!-- ===================== TELA: LOGIN / CADASTRO ===================== -->
 <section id="tela-auth" class="tela-auth">
   <div class="auth-coluna">
@@ -56,8 +63,11 @@
 
         <div class="campo">
           <label for="input-senha-auth">Senha</label>
-          <input type="password" id="input-senha-auth" autocomplete="current-password" required />
-          <p id="auth-dica-senha" class="campo-dica" hidden>Mínimo de 6 caracteres. Não há recuperação de senha, então anote a sua.</p>
+          <div class="campo-senha">
+            <input type="password" id="input-senha-auth" autocomplete="current-password" required />
+            <button type="button" id="btn-mostrar-senha" class="botao botao-secundario botao-mostrar-senha" aria-pressed="false" aria-controls="input-senha-auth">Mostrar</button>
+          </div>
+          <p id="auth-dica-senha" class="campo-dica">Não há recuperação de senha. Se esquecer, avise a equipe do Combinado.</p>
         </div>
 
         <p id="auth-erro" class="auth-erro" hidden></p>
@@ -249,6 +259,8 @@
         <h2 id="dialog-tarefas-titulo">Tarefas</h2>
       </div>
     </div>
+
+    <p id="faixa-aviso-tarefas" class="faixa-aviso" role="status" aria-live="polite" hidden></p>
 
     <section class="tarefas-progresso" aria-live="polite">
       <div class="tarefas-anel">

@@ -92,6 +92,7 @@ const { convidar, paginaComFake, novoContexto, calmo, cadastrar, entrar, novoTra
   await cardGrupo.locator('button:has-text("Tarefas")').click();
   await page.waitForSelector('#dialog-tarefas[open]');
   await itensTarefa.nth(2).locator('.tarefa-excluir').click();
+  await page.click('#btn-confirmar-exclusao');
   check('tarefa excluida, restam 2', (await itensTarefa.count()) === 2);
   await page.click('#dialog-tarefas [data-fechar-tarefas]');
   await page.waitForFunction(() => !document.getElementById('dialog-tarefas').open);

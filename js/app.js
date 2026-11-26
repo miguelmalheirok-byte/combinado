@@ -18,6 +18,7 @@
   var authConfigErro = document.getElementById("auth-config-erro");
   var authDicaUsuario = document.getElementById("auth-dica-usuario");
   var authDicaSenha = document.getElementById("auth-dica-senha");
+  var btnMostrarSenha = document.getElementById("btn-mostrar-senha");
   var authTitulo = document.getElementById("auth-titulo");
   var btnAuthPrincipal = document.getElementById("btn-auth-principal");
   var btnAuthAlternar = document.getElementById("btn-auth-alternar");
@@ -31,7 +32,7 @@
 
   var MENSAGENS_AUTH = {
     usuario_existe: "Esse usuário já existe. Tente entrar.",
-    credenciais: "Usuário ou senha incorretos.",
+    credenciais: "Usuário ou senha incorretos. Toque em Mostrar para conferir a senha.",
     senha_curta: "A senha precisa ter pelo menos 6 caracteres.",
     usuario_invalido: "Usuário inválido. Use de 3 a 30 letras, números, ponto, hífen ou sublinhado, sem espaços.",
     confirmacao_ligada: "Conta criada, mas o servidor está pedindo confirmação por e-mail. Avise a equipe do Combinado.",
@@ -62,9 +63,23 @@
     authAlternarTexto.textContent = cadastro ? "Já tem conta?" : "Não tem conta?";
     btnAuthAlternar.textContent = cadastro ? "Entrar" : "Criar conta";
     authDicaUsuario.hidden = !cadastro;
-    authDicaSenha.hidden = !cadastro;
+    authDicaSenha.textContent = cadastro
+      ? "Mínimo de 6 caracteres. Não há recuperação de senha, então anote a sua."
+      : "Não há recuperação de senha. Se esquecer, avise a equipe do Combinado.";
     inputSenhaAuth.setAttribute("autocomplete", cadastro ? "new-password" : "current-password");
+    mostrarSenha(false);
   }
+
+  function mostrarSenha(visivel) {
+    inputSenhaAuth.type = visivel ? "text" : "password";
+    btnMostrarSenha.textContent = visivel ? "Ocultar" : "Mostrar";
+    btnMostrarSenha.setAttribute("aria-pressed", visivel ? "true" : "false");
+  }
+
+  btnMostrarSenha.addEventListener("click", function () {
+    mostrarSenha(inputSenhaAuth.type === "password");
+    inputSenhaAuth.focus();
+  });
 
   btnAuthAlternar.addEventListener("click", function () {
     definirModoAuth(!modoCadastro);
@@ -103,14 +118,17 @@
   });
 
   function mostrarTelaAuth() {
+    pararAbertura();
     appPrincipal.hidden = true;
     telaAuth.hidden = false;
     inputUsuarioAuth.focus();
   }
 
   function entrarComoPerfil(perfil) {
+    pararAbertura();
     usuarioAtual = perfil;
     formAuth.reset();
+    mostrarSenha(false);
     telaAuth.hidden = true;
     appPrincipal.hidden = false;
     cabecalhoUsuarioNome.textContent = perfil.nome || perfil.usuario;
@@ -135,7 +153,8 @@
     [dialogTrabalho, dialogTarefas, dialogConfirmar, dialogCodigo, dialogImportar].forEach(function (d) {
       if (d.open) d.close();
     });
-    faixaAviso.hidden = true;
+    houveFalhaDeRede = false;
+    esconderAviso();
     definirModoAuth(false);
     mostrarTelaAuth();
     if (mensagem) mostrarErroAuth(mensagem);
@@ -177,8 +196,13 @@
   var recargaEmAndamento = false;
   var timerRecarga = null;
   var timerAviso = null;
+  var tipoAviso = "";               // "conexao" = aviso que a recarga pode apagar sozinha
+  var houveFalhaDeRede = false;     // uma gravação falhou sem conexão: o servidor vai desfazê-la
 
   var faixaAviso = document.getElementById("faixa-aviso");
+  // A mesma faixa existe dentro da janela de Tarefas, que cobre a tela inteira.
+  var faixaAvisoTarefas = document.getElementById("faixa-aviso-tarefas");
+  var faixasAviso = [faixaAviso, faixaAvisoTarefas];
 
   // Marca o <html> enquanto há algo em andamento (útil para estilo e para os testes).
   function atualizarOcupado() {
@@ -186,18 +210,24 @@
     document.documentElement.setAttribute("data-ocupado", ocupado ? "1" : "0");
   }
 
-  function mostrarAviso(texto, fixo) {
+  // tipo "conexao": aviso de falha de conexão, que some sozinho quando a conexão volta.
+  // Qualquer outro aviso só some pelo tempo (duracao, padrão 7 s) ou por outro aviso.
+  function mostrarAviso(texto, fixo, tipo, duracao) {
     clearTimeout(timerAviso);
-    faixaAviso.textContent = texto;
-    faixaAviso.hidden = false;
+    tipoAviso = tipo || "";
+    faixasAviso.forEach(function (faixa) {
+      faixa.textContent = texto;
+      faixa.hidden = false;
+    });
     if (!fixo) {
-      timerAviso = setTimeout(function () { faixaAviso.hidden = true; }, 6000);
+      timerAviso = setTimeout(esconderAviso, duracao || 7000);
     }
   }
 
   function esconderAviso() {
     clearTimeout(timerAviso);
-    faixaAviso.hidden = true;
+    tipoAviso = "";
+    faixasAviso.forEach(function (faixa) { faixa.hidden = true; });
   }
 
   var MENSAGENS_ESCRITA = {
@@ -234,7 +264,12 @@
       }
       state.trabalhos = lista;
       cargaEstado = "ok";
-      esconderAviso();
+      // Só apaga o aviso de "sem conexão"; um erro de gravação precisa ficar na tela.
+      if (tipoAviso === "conexao") esconderAviso();
+      if (houveFalhaDeRede) {
+        houveFalhaDeRede = false;
+        mostrarAviso("Algumas alterações feitas sem conexão não foram salvas e foram desfeitas. Confira a lista e refaça o que faltar.", false, "", 12000);
+      }
       depoisDeCarregar();
     }).catch(function (e) {
       recargaEmAndamento = false;
@@ -244,7 +279,9 @@
         return;
       }
       if (cargaEstado === "carregando") cargaEstado = "erro";
-      mostrarAviso("Sem conexão com o servidor. Vamos tentar de novo.", true);
+      mostrarAviso(houveFalhaDeRede
+        ? "Sem conexão. Suas últimas alterações não foram salvas e serão desfeitas quando a conexão voltar. Refaça depois."
+        : "Sem conexão com o servidor. Vamos tentar de novo.", true, "conexao");
       renderTrabalhos();
       agendarRecarga(4000);
     }).then(function () {
@@ -268,6 +305,7 @@
       inicio = Promise.reject(e);
     }
     return inicio.catch(function (e) {
+      if (e && e.codigo === "rede") houveFalhaDeRede = true;
       mostrarAviso(MENSAGENS_ESCRITA[e && e.codigo] || "Não foi possível salvar. Tente de novo.", false);
       if (e && e.codigo === "sem_sessao") voltarParaLogin("Sua sessão expirou. Entre de novo.");
     }).then(function () {
@@ -993,14 +1031,22 @@
         botaoRemover.textContent = "×";
         botaoRemover.setAttribute("aria-label", "Remover " + m.nome + " do grupo");
         botaoRemover.addEventListener("click", function () {
-          trabalho.membros = trabalho.membros.filter(function (x) { return x.id !== m.id; });
-          trabalho.tarefas.forEach(function (t) {
-            if (t.responsavelId === m.id) t.responsavelId = "";
+          pedirConfirmacao({
+            titulo: "Remover " + m.nome + " do grupo?",
+            texto: "A pessoa perde o acesso a este trabalho. Ela só volta se entrar de novo com o código do grupo; se não quiser que volte, troque o código depois.",
+            rotulo: "Remover",
+            aoConfirmar: function () {
+              var atual = achar(trabalho.id) || trabalho;
+              atual.membros = atual.membros.filter(function (x) { return x.id !== m.id; });
+              atual.tarefas.forEach(function (t) {
+                if (t.responsavelId === m.id) t.responsavelId = "";
+              });
+              renderIntegrantes();
+              renderTarefas();
+              renderTrabalhos();
+              escrever(function () { return Dados.sairDoTrabalho(atual.id, m.id); });
+            }
           });
-          renderIntegrantes();
-          renderTarefas();
-          renderTrabalhos();
-          escrever(function () { return Dados.sairDoTrabalho(trabalho.id, m.id); });
         });
         chip.appendChild(botaoRemover);
       }
@@ -1254,14 +1300,22 @@
       botaoExcluirTarefa.textContent = "Excluir";
       botaoExcluirTarefa.disabled = salvando;
       botaoExcluirTarefa.addEventListener("click", function () {
-        trabalho.tarefas = trabalho.tarefas.filter(function (t) { return t.id !== tarefa.id; });
-        var gravaStatus = statusPelasTarefasComGravacao(trabalho);
-        renderTarefas();
-        renderTrabalhos();
-        escrever(function () {
-          return Dados.excluirTarefa(tarefa.id).then(function () {
-            if (gravaStatus) return gravaStatus();
-          });
+        pedirConfirmacao({
+          titulo: "Excluir esta tarefa?",
+          texto: '"' + tarefa.texto + '" some para todos os integrantes e não dá para desfazer.',
+          rotulo: "Excluir tarefa",
+          aoConfirmar: function () {
+            var atual = achar(trabalho.id) || trabalho;
+            atual.tarefas = atual.tarefas.filter(function (t) { return t.id !== tarefa.id; });
+            var gravaStatus = statusPelasTarefasComGravacao(atual);
+            renderTarefas();
+            renderTrabalhos();
+            escrever(function () {
+              return Dados.excluirTarefa(tarefa.id).then(function () {
+                if (gravaStatus) return gravaStatus();
+              });
+            });
+          }
         });
       });
       item.appendChild(botaoExcluirTarefa);
@@ -1475,9 +1529,45 @@
 
   /* ---------------- inicialização ---------------- */
 
+  var telaCarregando = document.getElementById("tela-carregando");
+  var carregandoTexto = document.getElementById("carregando-texto");
+  var btnCarregandoTentar = document.getElementById("btn-carregando-tentar");
+  var timerAbertura = null;
+
+  function pararAbertura() {
+    clearTimeout(timerAbertura);
+    timerAbertura = null;
+    telaCarregando.hidden = true;
+  }
+
+  // Abre o app: enquanto a sessão responde mostra "Carregando…"; sem internet
+  // mostra "Sem conexão" e tenta de novo, em vez de cair no login sem explicar.
+  function abrirSessao() {
+    clearTimeout(timerAbertura);
+    timerAbertura = null;
+    telaCarregando.hidden = false;
+    carregandoTexto.textContent = "Carregando…";
+    btnCarregandoTentar.hidden = true;
+    Dados.sessaoAtual().then(function (perfil) {
+      if (perfil) return entrarComoPerfil(perfil);
+      mostrarTelaAuth();
+    }).catch(function (e) {
+      if (e && e.codigo === "rede") {
+        carregandoTexto.textContent = "Sem conexão com o servidor. Confira a internet; vamos tentar de novo.";
+        btnCarregandoTentar.hidden = false;
+        timerAbertura = setTimeout(abrirSessao, 5000);
+        return;
+      }
+      mostrarTelaAuth();
+    });
+  }
+
+  btnCarregandoTentar.addEventListener("click", abrirSessao);
+
   atualizarOcupado();
   telaAuth.hidden = true;
   appPrincipal.hidden = true;
+  telaCarregando.hidden = false;
 
   if (!Dados.iniciar()) {
     mostrarTelaAuth();
@@ -1488,11 +1578,6 @@
         voltarParaLogin("Sua sessão terminou. Entre de novo.");
       }
     });
-    Dados.sessaoAtual().then(function (perfil) {
-      if (perfil) return entrarComoPerfil(perfil);
-      mostrarTelaAuth();
-    }).catch(function () {
-      mostrarTelaAuth();
-    });
+    abrirSessao();
   }
 })();

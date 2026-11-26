@@ -40,7 +40,7 @@
       setTimeout(function () {
         if (flag("offline") === "1") return resolve({ data: null, error: { message: "Failed to fetch" } });
         try { resolve(fn()); } catch (e) { resolve({ data: null, error: { message: e.message } }); }
-      }, 2);
+      }, Number(flag("lento")) || 2);
     });
   }
 
@@ -92,6 +92,7 @@
     if (!s) return { data: null, error: erroPerm(q.tabela) };
     var uid = s.user.id, db = carregar(), t = q.tabela, tabelaDb = db[t];
     var resultado;
+    if (q.op !== "select" && flag("falharescrita") === "1") return { data: null, error: { message: "boom (erro de gravação simulado)" } };
 
     if (q.op === "select") {
       var linhas = filtrar(q, tabelaDb.filter(function (l) { return pode(db, uid, t, l); }));
