@@ -2,25 +2,25 @@
 
 Esta pasta guarda os testes que usamos para conferir as funcionalidades do Combinado a cada mudança. Eles abrem o app num navegador de verdade (Chromium, via Playwright), clicam e preenchem os campos como uma pessoa faria e conferem se o resultado está certo. Também registram qualquer erro que apareça no console do navegador.
 
-O resultado da última execução completa está em `resultados.txt`, na raiz do repositório: 15 roteiros, 216 checagens aprovadas, nenhuma falha e nenhum erro de console.
+O resultado da última execução completa está em `resultados.txt`, na raiz do repositório.
+
+Os roteiros do app rodam contra um Supabase de mentira (`fake_supabase.js`), que guarda tudo no navegador e imita as regras de acesso do banco. Isso deixa os testes rápidos e independentes de internet, e permite simular duas pessoas ao mesmo tempo (duas abas, duas contas). As regras de acesso de verdade, no Postgres, são testadas à parte em `supabase/testes/`.
 
 ## O que cada arquivo testa
 
 | Arquivo | O que confere |
 |---|---|
+| `contas_grupos.js` | Login e cadastro de verdade (mensagens de erro, sessão ao recarregar, confirmação de e-mail ligada), grupo com código, duas pessoas ao mesmo tempo com atualização ao vivo, troca de código, remover integrante, sair, excluir, queda de internet e importação dos trabalhos antigos |
 | `login.js` | Cadastro, login, senha errada, usuário duplicado, sair, dados isolados por conta e login automático ao recarregar |
 | `editar.js` | Edição de trabalho, cancelar sem alterar nada e persistência depois de recarregar |
 | `completo.js` | Fluxo geral: criar, mudar status, editar, excluir com confirmação e acessibilidade básica |
-| `tarefas.js` | Divisão de tarefas em trabalhos em grupo, contador, marcar como feita, excluir e uso só por teclado |
+| `tarefas.js` | Divisão de tarefas em trabalhos em grupo (com colegas entrando pelo código), contador, marcar como feita, excluir e uso só por teclado |
 | `tarefas_status.js` | Trabalho em grupo vai para "Pronto" quando todas as tarefas são concluídas, volta para "Fazendo" se reabrir/adicionar tarefa, e "Entregue" nunca é alterado |
-| `observacoes.js` | Campo de observações do trabalho: criar, editar, apagar, cancelar, quebra de linha, limite de 500 caracteres, HTML tratado como texto e dados antigos |
-| `integrantes.js` | Cadastro e remoção de integrantes do grupo e escolha do responsável na lista |
-| `integrantes_card.js` | Integrantes aparecendo direto no card da tela principal |
-| `backfill_integrantes.js` | Trabalhos antigos que já tinham responsável nas tarefas ganhando a lista de integrantes |
+| `observacoes.js` | Campo de observações do trabalho: criar, editar, apagar, cancelar, quebra de linha, limite de 500 caracteres, HTML tratado como texto e trabalho sem observação |
 | `filtros.js` | Lista ordenada por prazo e filtro por matéria |
-| `status_cor.js` | Logo, fonte própria, status "Pronto", abas de status com contagem, cor do card (escolher, trocar, remover), selo de data, prévia do formulário e dados antigos sem cor |
+| `status_cor.js` | Logo, fonte própria, status "Pronto", abas de status com contagem, cor do card (escolher, trocar, remover), selo de data, prévia do formulário e trabalho sem cor |
 | `tema.js` | Tema escuro: segue o aparelho na primeira visita, botão de alternar, escolha salva ao recarregar, cores e contraste dos cards e página 404 |
-| `teste_usuarios.js` | Melhorias feitas a partir do teste com usuários: dica e destaque para dividir tarefas no trabalho em grupo, filtro por matéria mais visível, rótulos do formulário e botão de salvar sempre visível em tela de celular baixa, e aviso para cadastrar integrantes antes de escolher o responsável da tarefa |
+| `teste_usuarios.js` | Melhorias feitas a partir do teste com usuários: dica e destaque para dividir tarefas no trabalho em grupo, filtro por matéria mais visível, rótulos do formulário e botão de salvar sempre visível em tela de celular baixa, e o campo Responsável oferecendo só quem está no grupo |
 | `lembrete.js` | Avisos de prazo: atrasado, vence hoje, amanhã e em 3 dias |
 | `progresso.js` | Indicador de trabalhos entregues e barra de progresso |
 

@@ -1,6 +1,72 @@
 Resultados dos testes automatizados do Combinado
-Data da execução: 24/11/2026 15:36 (UTC)
-Ferramenta: Playwright (Chromium headless), app servido localmente em http://localhost:8799
+Data da execução: 26/11/2026 15:14 (UTC)
+Ferramenta: Playwright (Chromium headless), app servido localmente em http://localhost:8799, com o Supabase de mentira (testes/fake_supabase.js)
+
+================ testes/contas_grupos.js ================
+OK   - abre na tela de login
+OK   - dicas de cadastro escondidas no login
+OK   - dicas de usuário e senha aparecem ao criar conta
+OK   - usuário com espaço é recusado com mensagem clara
+OK   - senha curta é recusada com mensagem clara
+OK   - botão volta ao normal depois do erro
+OK   - conta criada entra no app e mostra o nome digitado
+OK   - lista começa vazia
+OK   - recarregar a página mantém a sessão
+OK   - sair volta para a tela de login
+OK   - usuário repetido (mesmo em maiúsculas) é recusado
+OK   - senha errada mostra "Usuário ou senha incorretos"
+OK   - entrar com a senha certa funciona
+OK   - trabalho criado aparece na lista
+OK   - dono vê "Excluir" (não "Sair")
+OK   - card em grupo sem tarefas orienta a passar o código
+OK   - código do grupo tem 6 caracteres sem letras confusas
+OK   - dono aparece como integrante com selo "dono"
+OK   - dono vê "Trocar código" e não vê "Sair deste trabalho"
+OK   - responsável só oferece quem está no grupo
+OK   - não existe mais o campo de digitar integrante
+OK   - Bia começa sem trabalhos (não vê os da Ana)
+OK   - código errado mostra erro e a janela continua aberta
+OK   - código certo (minúsculo, com espaços) fecha a janela
+OK   - trabalho aparece na lista da Bia
+OK   - integrante vê "Sair" (não "Excluir")
+OK   - card mostra os dois integrantes
+OK   - Ana vê a Bia entrar ao vivo (janela de tarefas aberta)
+OK   - responsável da Ana ganhou a Bia ao vivo
+OK   - integrante vê o mesmo código do grupo
+OK   - integrante não vê "Trocar código" nem "×" de remover, vê "Sair deste trabalho"
+OK   - Bia criou a tarefa com ela de responsável
+OK   - Ana recebe a tarefa ao vivo, com a Bia de responsável
+OK   - Ana concluiu: anel mostra 1/1
+OK   - Bia vê a tarefa concluída ao vivo
+OK   - status do card virou Pronto para a Bia (regra automática, gravada no servidor)
+OK   - trocar código pede confirmação
+OK   - código novo é diferente do antigo
+OK   - código antigo não funciona mais
+OK   - Caio (de fora) não enxerga o trabalho
+OK   - código novo funciona para o Caio
+OK   - Ana vê 3 integrantes ao vivo
+OK   - Ana removeu o Caio
+OK   - o Caio perde o trabalho ao vivo
+OK   - Bia: sair pede confirmação clara
+OK   - Bia saiu: o trabalho some da lista dela
+OK   - Ana vê a Bia sair ao vivo e a tarefa fica sem responsável
+OK   - Bia voltou pelo código
+OK   - excluir trabalho compartilhado avisa que some para todos
+OK   - trabalho excluído some para a Ana
+OK   - e some para a Bia ao vivo
+OK   - sem internet: avisa que a alteração não foi salva
+OK   - ao voltar a conexão, a lista confere com o servidor (status não salvo é desfeito)
+OK   - servidor pedindo confirmação de e-mail: mostra aviso em vez de travar
+OK   - conta nova com trabalhos antigos no navegador oferece importar
+OK   - os 2 trabalhos antigos foram importados
+OK   - status, tipo e matéria foram preservados
+OK   - tarefas vieram, concluídas ou não
+OK   - a senha antiga em texto puro foi apagada deste navegador (só a do Zeca)
+OK   - na próxima entrada não pergunta de novo
+OK   - "Não importar" não traz nada para a conta
+OK   - e não pergunta de novo depois de recarregar
+OK   - sem a biblioteca do Supabase: tela de login mostra aviso claro
+--- total de checagens: 63 | erros de console: 0
 
 ================ testes/login.js ================
 --- carga inicial: tela de login visível, app escondido ---
@@ -182,44 +248,8 @@ OK   - cancelar não salva a observação
 OK   - HTML digitado aparece como texto, sem virar tag
 OK   - limite de 500 caracteres
 OK   - após recarregar, observação continua
-OK   - trabalhos antigos sem observação abrem sem erro
+OK   - trabalho sem observação (campo vazio no banco) abre sem erro
 --- total de checagens: 14 ---
---- erros de console: 0 ---
-
-================ testes/integrantes.js ================
-OK   - lista de integrantes comeca vazia
-OK   - select de responsavel comeca so com "Sem responsavel"
-OK   - 2 integrantes adicionados
-OK   - estado vazio de integrantes sumiu
-OK   - select de responsavel ganhou as 2 opcoes + sem responsavel
-OK   - campo de nome limpa apos adicionar
-OK   - nao duplica integrante com nome repetido (case-insensitive)
-OK   - tarefa criada com responsavel escolhido no select
-OK   - integrante removido da lista
-OK   - select de responsavel perdeu a opcao Samuel
-OK   - tarefa ja criada continua mostrando Samuel como responsavel (nao eh referencia viva)
-OK   - apos reload, integrante (Miguel) persistiu
-OK   - apos reload, tarefa com responsavel persistiu
-OK   - integrante adicionado via teclado
---- total de checagens: 14 ---
---- erros de console: 0 ---
-
-================ testes/integrantes_card.js ================
-OK   - individual nunca mostra "integrantes" na meta
-OK   - grupo sem integrantes nao mostra "integrantes" na meta ainda
-OK   - card do grupo agora mostra os integrantes direto na tela principal
-OK   - ao remover integrante, a meta do card atualiza (so Miguel)
-OK   - apos reload, integrantes continuam visiveis no card
---- total de checagens: 5 ---
---- erros de console: 0 ---
-
-================ testes/backfill_integrantes.js ================
-OK   - card com tarefas antigas (sem integrantes explicitos) agora mostra os nomes no card
-OK   - contador de tarefas continua certo (0/2)
-OK   - chips de integrantes tambem foram preenchidos (Samuel e Miguel)
-OK   - select de responsavel tem as 2 opcoes + sem responsavel
-OK   - apos reload, o backfill persistiu de verdade no localStorage
---- total de checagens: 5 ---
 --- erros de console: 0 ---
 
 ================ testes/filtros.js ================
@@ -233,36 +263,6 @@ OK   - voltando pra "todas as materias" mostra os 4 de novo
 OK   - materia sem nenhum trabalho some da lista de filtro
 OK   - apos reload, restam os 2 trabalhos nao excluidos
 --- total de checagens: 9 ---
---- erros de console: 0 ---
-
-================ testes/lembrete.js ================
-OK   - atrasado mostra badge "Atrasado"
-OK   - badge atrasado tem a classe de perigo
-OK   - hoje mostra badge "Vence hoje"
-OK   - amanha mostra badge "Vence amanhã"
-OK   - 3 dias mostra badge "Vence em 3 dias"
-OK   - prazo distante (10 dias) nao mostra badge
-OK   - sem prazo nao mostra badge
-OK   - ao marcar como entregue, badge de atraso some
-OK   - ao voltar status, badge de atraso reaparece
-OK   - apos reload, badge "Atrasado" continua correto
-OK   - apos reload, badge "Vence hoje" continua correto
---- total de checagens: 11 ---
---- erros de console: 0 ---
-
-================ testes/progresso.js ================
-OK   - progresso escondido com lista vazia
-OK   - progresso aparece com 1 trabalho
-OK   - texto inicial "0 de 1 trabalho entregue"
-OK   - barra em 0%
-OK   - texto com 4 trabalhos, nenhum entregue
-OK   - texto atualiza pra "1 de 4 trabalhos entregues"
-OK   - barra em 25%
-OK   - texto em 100%: "4 de 4 trabalhos entregues"
-OK   - barra em 100%
-OK   - progresso some de novo com lista vazia
-OK   - apos reload, progresso persiste em 100%
---- total de checagens: 11 ---
 --- erros de console: 0 ---
 
 ================ testes/status_cor.js ================
@@ -306,7 +306,7 @@ OK   - 8 opções de cor (sem cor + 7)
 OK   - cada cor tem nome para leitor de tela
 === PERSISTÊNCIA E DADOS ANTIGOS ===
 OK   - após recarregar, cor e status continuam
-OK   - trabalhos antigos sem cor aparecem sem erro
+OK   - trabalho sem cor (campo vazio no banco) aparece sem erro
 --- total de checagens: 33 ---
 --- erros de console: 0 ---
 
@@ -359,15 +359,41 @@ OK   - contador de tarefas continua no botão (0/1)
 OK   - rótulo do filtro diz "Filtrar por matéria"
 OK   - rótulo do filtro tem ícone de funil
 OK   - filtrar por matéria continua funcionando
-=== RETESTE: AVISO DE INTEGRANTES ANTES DO RESPONSÁVEL ===
-OK   - grupo sem integrantes mostra o aviso ao lado do campo Responsável
-OK   - o aviso fala em cadastrar os integrantes
-OK   - o campo Responsável aponta para o aviso (leitor de tela)
-OK   - texto de "nenhum integrante" explica a ordem
-OK   - botão "Cadastrar integrantes" leva o foco ao campo do nome
-OK   - depois de cadastrar um integrante o aviso some
-OK   - e o integrante aparece como opção de responsável
-OK   - removendo o último integrante o aviso volta
---- total de checagens: 22 ---
+=== RETESTE: RESPONSÁVEL SÓ COM QUEM ESTÁ NO GRUPO (agora são contas, convidadas pelo código) ===
+OK   - o campo Responsável só oferece quem está no grupo (no começo, só o dono)
+OK   - não existe mais o aviso para "cadastrar integrantes" (não há mais cadastro à mão)
+OK   - o código do grupo aparece com explicação de como passar aos colegas
+OK   - depois que um colega entra, ele aparece como opção de responsável
+--- total de checagens: 18 ---
+--- erros de console: 0 ---
+
+================ testes/lembrete.js ================
+OK   - atrasado mostra badge "Atrasado"
+OK   - badge atrasado tem a classe de perigo
+OK   - hoje mostra badge "Vence hoje"
+OK   - amanha mostra badge "Vence amanhã"
+OK   - 3 dias mostra badge "Vence em 3 dias"
+OK   - prazo distante (10 dias) nao mostra badge
+OK   - sem prazo nao mostra badge
+OK   - ao marcar como entregue, badge de atraso some
+OK   - ao voltar status, badge de atraso reaparece
+OK   - apos reload, badge "Atrasado" continua correto
+OK   - apos reload, badge "Vence hoje" continua correto
+--- total de checagens: 11 ---
+--- erros de console: 0 ---
+
+================ testes/progresso.js ================
+OK   - progresso escondido com lista vazia
+OK   - progresso aparece com 1 trabalho
+OK   - texto inicial "0 de 1 trabalho entregue"
+OK   - barra em 0%
+OK   - texto com 4 trabalhos, nenhum entregue
+OK   - texto atualiza pra "1 de 4 trabalhos entregues"
+OK   - barra em 25%
+OK   - texto em 100%: "4 de 4 trabalhos entregues"
+OK   - barra em 100%
+OK   - progresso some de novo com lista vazia
+OK   - apos reload, progresso persiste em 100%
+--- total de checagens: 11 ---
 --- erros de console: 0 ---
 

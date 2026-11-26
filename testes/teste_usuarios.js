@@ -4,10 +4,11 @@
 // 3) rótulos do formulário (nome do trabalho x matéria) e botão de salvar sempre visível no celular
 // 4) reteste de 24/11: aviso para cadastrar integrantes antes de escolher o responsável da tarefa
 const { chromium } = require('playwright');
+const { convidar, paginaComFake, novoContexto, calmo, cadastrar, entrar, novoTrabalho } = require('./_base');
 
 (async () => {
   const browser = await chromium.launch();
-  const page = await browser.newPage({ viewport: { width: 360, height: 560 } });
+  const page = await paginaComFake(browser, { viewport: { width: 360, height: 560 } });
   const erros = [];
   page.on('console', (msg) => { if (msg.type() === 'error') erros.push(msg.text()); });
   page.on('pageerror', (err) => erros.push('pageerror: ' + err.message));
@@ -25,6 +26,7 @@ const { chromium } = require('playwright');
   await page.fill('#input-senha-auth', '123456');
   await page.click('#btn-auth-principal');
   await page.waitForSelector('#app-principal:not([hidden])');
+  await calmo(page);
 
   console.log('=== FORMULÁRIO: RÓTULOS E BOTÃO SALVAR ===');
   await page.click('#btn-novo-trabalho');
@@ -76,21 +78,15 @@ const { chromium } = require('playwright');
   const titulos = await page.locator('#lista-trabalhos .trabalho-titulo').allTextContents();
   check('filtrar por matéria continua funcionando', titulos.length === 1 && titulos[0] === 'Projeto A3');
 
-  console.log('=== RETESTE: AVISO DE INTEGRANTES ANTES DO RESPONSÁVEL ===');
+  console.log('=== RETESTE: RESPONSÁVEL SÓ COM QUEM ESTÁ NO GRUPO (agora são contas, convidadas pelo código) ===');
   await page.selectOption('#select-filtro-materia', '');
   await cardGrupo.locator('button:has-text("Tarefas")').click();
-  check('grupo sem integrantes mostra o aviso ao lado do campo Responsável', await page.isVisible('#aviso-responsavel'));
-  check('o aviso fala em cadastrar os integrantes', (await page.textContent('#aviso-responsavel')).includes('cadastre antes os integrantes'));
-  check('o campo Responsável aponta para o aviso (leitor de tela)', (await page.getAttribute('#input-tarefa-responsavel', 'aria-describedby')) === 'aviso-responsavel');
-  check('texto de "nenhum integrante" explica a ordem', (await page.textContent('#integrantes-vazio')).includes('depois escolha o responsável'));
-  await page.click('#btn-ir-integrantes');
-  check('botão "Cadastrar integrantes" leva o foco ao campo do nome', await page.evaluate(() => document.activeElement && document.activeElement.id === 'input-integrante-nome'));
-  await page.fill('#input-integrante-nome', 'Miguel');
-  await page.click('#form-integrante button');
-  check('depois de cadastrar um integrante o aviso some', await page.isHidden('#aviso-responsavel'));
-  check('e o integrante aparece como opção de responsável', (await page.locator('#input-tarefa-responsavel option').allTextContents()).includes('Miguel'));
-  await page.locator('#lista-integrantes li.integrante-chip').filter({ hasText: 'Miguel' }).locator('button').click();
-  check('removendo o último integrante o aviso volta', await page.isVisible('#aviso-responsavel'));
+  await calmo(page);
+  check('o campo Responsável só oferece quem está no grupo (no começo, só o dono)', (await page.locator('#input-tarefa-responsavel option').count()) === 2);
+  check('não existe mais o aviso para "cadastrar integrantes" (não há mais cadastro à mão)', (await page.locator('#aviso-responsavel').count()) === 0);
+  check('o código do grupo aparece com explicação de como passar aos colegas', (await page.textContent('.codigo-grupo-dica')).includes('Entrar com código'));
+  await convidar(page, 'Miguel');
+  check('depois que um colega entra, ele aparece como opção de responsável', (await page.locator('#input-tarefa-responsavel option').allTextContents()).includes('Miguel'));
   await page.click('#dialog-tarefas [data-fechar-tarefas]');
 
   console.log('--- total de checagens: ' + checks + ' ---');

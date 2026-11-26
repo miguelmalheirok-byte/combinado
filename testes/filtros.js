@@ -1,8 +1,9 @@
 const { chromium } = require('playwright');
+const { paginaComFake, novoContexto, calmo, cadastrar, entrar, novoTrabalho } = require('./_base');
 
 (async () => {
   const browser = await chromium.launch();
-  const page = await browser.newPage();
+  const page = await paginaComFake(browser);
   const erros = [];
   page.on('console', (msg) => { if (msg.type() === 'error') erros.push(msg.text()); });
   page.on('pageerror', (err) => erros.push('pageerror: ' + err.message));
@@ -21,6 +22,7 @@ const { chromium } = require('playwright');
   await page.fill('#input-senha-auth', '123456');
   await page.click('#btn-auth-principal');
   await page.waitForSelector('#app-principal:not([hidden])');
+  await calmo(page);
 
   check('barra de filtros escondida com lista vazia', await page.isHidden('#filtros-barra'));
 
@@ -82,6 +84,7 @@ const { chromium } = require('playwright');
   // reload: preferencia de ordenacao/filtro nao precisa persistir, mas trabalhos restantes sim
   await page.reload();
   await page.waitForSelector('#app-principal:not([hidden])');
+  await calmo(page);
   titulos = await titulosNaTela();
   check('apos reload, restam os 2 trabalhos nao excluidos', titulos.length === 2);
 

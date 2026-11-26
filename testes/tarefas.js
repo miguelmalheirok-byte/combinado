@@ -1,8 +1,9 @@
 const { chromium } = require('playwright');
+const { convidar, paginaComFake, novoContexto, calmo, cadastrar, entrar, novoTrabalho } = require('./_base');
 
 (async () => {
   const browser = await chromium.launch();
-  const page = await browser.newPage();
+  const page = await paginaComFake(browser);
   const erros = [];
   page.on('console', (msg) => { if (msg.type() === 'error') erros.push(msg.text()); });
   page.on('pageerror', (err) => erros.push('pageerror: ' + err.message));
@@ -22,6 +23,7 @@ const { chromium } = require('playwright');
   await page.fill('#input-senha-auth', '123456');
   await page.click('#btn-auth-principal');
   await page.waitForSelector('#app-principal:not([hidden])');
+  await calmo(page);
   check('login/cadastro ok', await page.isHidden('#tela-auth'));
 
   // cria um trabalho individual (não deve ter botão Tarefas)
@@ -55,8 +57,7 @@ const { chromium } = require('playwright');
 
   // cadastra os integrantes do grupo primeiro (campo responsavel agora é lista suspensa)
   for (const nome of ['Miguel', 'Samuel']) {
-    await page.fill('#input-integrante-nome', nome);
-    await page.click('#form-integrante button[type="submit"]');
+    await convidar(page, nome);
   }
 
   // adiciona 3 tarefas
@@ -67,7 +68,7 @@ const { chromium } = require('playwright');
   ];
   for (const t of tarefas) {
     await page.fill('#input-tarefa-texto', t.texto);
-    await page.selectOption('#input-tarefa-responsavel', t.responsavel || '');
+    await page.selectOption('#input-tarefa-responsavel', t.responsavel ? { label: t.responsavel } : '');
     await page.click('#form-tarefa button[type="submit"]');
   }
 
@@ -99,6 +100,7 @@ const { chromium } = require('playwright');
   // reload: confirma persistencia no localStorage
   await page.reload();
   await page.waitForSelector('#app-principal:not([hidden])');
+  await calmo(page);
   const cardsDepois = page.locator('#lista-trabalhos li.trabalho-card');
   const cardGrupoDepois = cardsDepois.filter({ hasText: 'Projeto A3' });
   check('apos reload, contador de tarefas persistiu (1/2)', await cardGrupoDepois.locator('button:has-text("Tarefas (1/2)")').isVisible());

@@ -1,8 +1,9 @@
 const { chromium } = require('playwright');
+const { paginaComFake, novoContexto, calmo, cadastrar, entrar, novoTrabalho } = require('./_base');
 
 (async () => {
   const browser = await chromium.launch();
-  const page = await browser.newPage();
+  const page = await paginaComFake(browser);
   const erros = [];
   page.on('console', (msg) => { if (msg.type() === 'error') erros.push(msg.text()); });
   page.on('pageerror', (err) => erros.push('pageerror: ' + err.message));
@@ -21,6 +22,7 @@ const { chromium } = require('playwright');
   await page.fill('#input-senha-auth', '123456');
   await page.click('#btn-auth-principal');
   await page.waitForSelector('#app-principal:not([hidden])');
+  await calmo(page);
 
   check('progresso escondido com lista vazia', await page.isHidden('#progresso-trabalhos'));
 
@@ -70,6 +72,7 @@ const { chromium } = require('playwright');
   await cardFinal.locator('select').selectOption('entregue');
   await page.reload();
   await page.waitForSelector('#app-principal:not([hidden])');
+  await calmo(page);
   check('apos reload, progresso persiste em 100%', (await page.textContent('#progresso-texto')) === '1 de 1 trabalho entregue');
 
   console.log('--- total de checagens: ' + checks + ' ---');

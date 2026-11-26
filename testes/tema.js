@@ -1,4 +1,5 @@
 const { chromium } = require('playwright');
+const { paginaComFake, novoContexto, calmo, cadastrar, entrar, novoTrabalho } = require('./_base');
 
 (async () => {
   const browser = await chromium.launch();
@@ -10,7 +11,7 @@ const { chromium } = require('playwright');
     if (!cond) process.exitCode = 1;
   }
   async function novaPagina(colorScheme) {
-    const ctx = await browser.newContext({ colorScheme, viewport: { width: 390, height: 844 } });
+    const ctx = await novoContexto(browser, { colorScheme, viewport: { width: 390, height: 844 } });
     const page = await ctx.newPage();
     page.on('console', (msg) => { if (msg.type() === 'error') erros.push(msg.text()); });
     page.on('pageerror', (err) => erros.push('pageerror: ' + err.message));
@@ -26,6 +27,7 @@ const { chromium } = require('playwright');
     await page.fill('#input-senha-auth', '123456');
     await page.click('#btn-auth-principal');
     await page.waitForSelector('#app-principal:not([hidden])');
+    await calmo(page);
   }
 
   console.log('=== PADRÃO SEGUE O APARELHO ===');
@@ -91,6 +93,7 @@ const { chromium } = require('playwright');
   console.log('=== PERSISTÊNCIA ===');
   await page.reload();
   await page.waitForSelector('#app-principal:not([hidden])');
+  await calmo(page);
   check('após recarregar continua escuro', (await tema(page)) === 'escuro');
   check('escolha fica salva no navegador', (await page.evaluate(() => localStorage.getItem('combinado:tema:v1'))) === 'escuro');
   await page.locator('#btn-tema').click();
@@ -104,6 +107,7 @@ const { chromium } = require('playwright');
   check('aparelho escuro, mas a pessoa escolheu claro', (await tema(page)) === 'claro');
   await page.reload();
   await page.waitForSelector('#app-principal:not([hidden])');
+  await calmo(page);
   check('após recarregar, a escolha (claro) vence o aparelho (escuro)', (await tema(page)) === 'claro');
 
   console.log('=== PÁGINA 404 ===');

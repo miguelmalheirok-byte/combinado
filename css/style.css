@@ -92,7 +92,6 @@
 :root[data-tema="escuro"] .auth-carta,
 :root[data-tema="escuro"] .tarefas-progresso,
 :root[data-tema="escuro"] .confirmar-icone,
-:root[data-tema="escuro"] .form-integrante .botao,
 :root[data-tema="escuro"] .botao-perigo,
 :root[data-tema="escuro"] .avatar,
 :root[data-tema="escuro"] .tarefa-responsavel,
@@ -110,7 +109,6 @@
 :root[data-tema="escuro"] .tarefa-responsavel,
 :root[data-tema="escuro"] .selo-prazo-hoje,
 :root[data-tema="escuro"] .selo-prazo-proximo,
-:root[data-tema="escuro"] .form-integrante .botao,
 :root[data-tema="escuro"] .botao-perigo {
   border-color: #1e1b4b;
 }
@@ -807,27 +805,6 @@ dialog h2 {
   font-weight: 800;
 }
 
-.form-integrante { display: flex; gap: 8px; }
-
-.form-integrante .campo-integrante { flex: 1 1 auto; margin-bottom: 0; }
-.form-integrante .campo-integrante input { min-height: 46px; font-size: 16px; }
-
-.form-integrante .botao {
-  flex: 0 0 auto;
-  min-height: 46px;
-  padding: 0 16px;
-  border: var(--borda);
-  border-radius: 14px;
-  background: var(--destaque);
-  box-shadow: 3px 3px 0 var(--linha);
-  font-family: var(--fonte-texto);
-  font-size: 15px;
-  font-weight: 700;
-  text-decoration: none;
-}
-
-.integrantes-vazio { font-size: 14px; margin: 0; }
-
 .lista-integrantes { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 10px; }
 
 .integrante-chip {
@@ -987,22 +964,88 @@ dialog h2 {
 
 :root[data-tema="escuro"] .trabalho-card[data-cor] .trabalho-dica { border-color: #1e1b4b; }
 
-/* aviso: cadastrar integrantes antes de escolher o responsável (reteste de 24/11) */
-.aviso-responsavel {
-  margin-top: 8px;
-  padding: 10px 12px;
+/* ---------- Login real, grupos e código (versão com Supabase) ---------- */
+.conteudo-cabecalho-acoes { display: flex; flex-direction: column; gap: 10px; }
+.conteudo-cabecalho-acoes .botao { width: 100%; }
+
+.botao-secundario {
+  background: var(--branco);
+  box-shadow: 3px 3px 0 var(--linha);
+  min-height: 48px;
+  font-size: 17px;
+}
+
+.campo-dica {
+  margin: 6px 0 0;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.35;
+  color: var(--placeholder);
+}
+
+.faixa-aviso {
+  margin: 0;
+  padding: 10px 14px;
   border: var(--borda);
   border-radius: 14px;
   background: var(--destaque);
   color: #1e1b4b;
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 700;
   line-height: 1.35;
 }
-.aviso-responsavel .botao-texto {
-  display: block;
-  min-height: 44px;
-  padding: 6px 0 0;
+
+.dialog-texto { margin: 0 0 14px; font-size: 15px; line-height: 1.4; }
+
+.input-codigo {
+  text-transform: uppercase;
+  letter-spacing: 4px;
+  font-family: var(--fonte-titulo);
+  font-weight: 800;
+  text-align: center;
+}
+.campo input.input-codigo { font-size: 24px; min-height: 56px; }
+
+.codigo-grupo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 6px;
+  padding: 12px 14px;
+  border: var(--borda);
+  border-radius: 16px;
+  background: var(--branco);
+}
+.codigo-grupo-rotulo { font-size: 13px; font-weight: 700; color: var(--placeholder); }
+.codigo-grupo-linha { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 8px; }
+.codigo-grupo-valor {
+  font-family: var(--fonte-titulo);
+  font-size: 30px;
+  line-height: 1.1;
+  font-weight: 800;
+  letter-spacing: 5px;
+  margin-right: auto;
+  user-select: all;
+}
+.codigo-grupo-dica { margin: 0; font-size: 13px; line-height: 1.35; }
+
+.integrante-papel {
+  padding: 2px 8px;
+  margin-right: 4px;
+  border: var(--borda);
+  border-radius: 999px;
+  background: var(--destaque);
   color: #1e1b4b;
-  text-align: left;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.botao-sair-grupo { align-self: flex-start; color: var(--erro); }
+
+:root[data-ocupado="1"] .botao-primario:not(:disabled) { cursor: progress; }
+.botao:disabled, select:disabled { opacity: 0.6; cursor: not-allowed; }
+
+@media (min-width: 520px) {
+  .conteudo-cabecalho-acoes { flex-direction: row; }
+  .conteudo-cabecalho-acoes .botao { width: auto; flex: 1; }
 }

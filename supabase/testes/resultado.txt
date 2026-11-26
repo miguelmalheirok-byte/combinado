@@ -1,0 +1,151 @@
+ usuario | nome 
+---------+------
+ ana     | Ana
+ bia     | Bia
+ caio    | caio
+(3 rows)
+
+              set_config              
+--------------------------------------
+ 00000000-0000-0000-0000-00000000000a
+(1 row)
+
+                  id                  | codigo |   status    
+--------------------------------------+--------+-------------
+ f72c5959-8cd6-48c8-ae6b-ae50cbda7d0e | YZFZLS | nao-comecei
+(1 row)
+
+--- ana ve:
+ titulo | codigo 
+--------+--------
+ TCC    | YZFZLS
+(1 row)
+
+ usuario | papel 
+---------+-------
+ ana     | dono
+(1 row)
+
+--- ana tenta forjar dono (deve falhar)
+psql:rls.sql:18: ERROR:  new row violates row-level security policy for table "trabalhos"
+--- ana tenta mudar codigo direto (deve falhar)
+psql:rls.sql:20: ERROR:  permission denied for table trabalhos
+              set_config              
+--------------------------------------
+ 00000000-0000-0000-0000-00000000000b
+(1 row)
+
+--- bia fora do grupo: trabalhos/tarefas/membros/perfis (esperado 0,0,0,1)
+ t | ta | m | p 
+---+----+---+---
+ 0 |  0 | 0 | 1
+(1 row)
+
+--- bia tenta entrar com codigo errado (deve falhar)
+psql:rls.sql:28: ERROR:  codigo_invalido
+CONTEXT:  PL/pgSQL function public.entrar_por_codigo(text) line 11 at RAISE
+--- bia tenta inserir em membros direto (deve falhar)
+psql:rls.sql:30: ERROR:  permission denied for table membros
+              set_config              
+--------------------------------------
+ 00000000-0000-0000-0000-00000000000b
+(1 row)
+
+--- bia entra pelo codigo (minusculo, com espaco)
+ entrou 
+--------
+ t
+(1 row)
+
+ titulo 
+--------
+ TCC
+(1 row)
+
+ usuario |   papel    
+---------+------------
+ ana     | dono
+ bia     | integrante
+(2 rows)
+
+ usuario 
+---------
+ ana
+ bia
+(2 rows)
+
+--- bia marca tarefa feita e responsavel=ela
+ feito | tem_resp 
+-------+----------
+ t     | t
+(1 row)
+
+--- bia tenta responsavel=caio (nao membro, deve falhar)
+psql:rls.sql:43: ERROR:  responsavel_invalido
+CONTEXT:  PL/pgSQL function public.tarefa_valida_responsavel() line 7 at RAISE
+--- bia tenta excluir trabalho (nao dono; 0 linhas)
+ ainda_existe 
+--------------
+            1
+(1 row)
+
+--- bia tenta remover ana (dono; 0 linhas)
+--- bia tenta trocar codigo (deve falhar)
+psql:rls.sql:50: ERROR:  somente_dono
+CONTEXT:  PL/pgSQL function public.trocar_codigo(uuid) line 6 at RAISE
+--- bia edita titulo e status (ok)
+  titulo   | status  
+-----------+---------
+ TCC final | fazendo
+(1 row)
+
+              set_config              
+--------------------------------------
+ 00000000-0000-0000-0000-00000000000c
+(1 row)
+
+--- caio fora: (0,0,0,1)
+ t | ta | m | p 
+---+----+---+---
+ 0 |  0 | 0 | 1
+(1 row)
+
+--- caio tenta alterar trabalho alheio (0 linhas) e tarefa alheia
+--- caio tenta alterar perfil da ana (0 linhas)
+  titulo   
+-----------
+ TCC final
+(1 row)
+
+              set_config              
+--------------------------------------
+ 00000000-0000-0000-0000-00000000000a
+(1 row)
+
+--- ana troca codigo
+ mudou 
+-------
+ t
+(1 row)
+
+--- ana remove bia; tarefa perde responsavel
+ membros | sem_resp 
+---------+----------
+       1 | t
+(1 row)
+
+--- ana tenta sair (dono, 0 linhas)
+ membros 
+---------
+       1
+(1 row)
+
+--- ana exclui trabalho: cascata
+ t | ta | m 
+---+----+---
+ 0 |  0 | 0
+(1 row)
+
+--- anon (deve falhar tudo)
+psql:rls.sql:87: ERROR:  permission denied for table trabalhos
+psql:rls.sql:88: ERROR:  permission denied for function entrar_por_codigo

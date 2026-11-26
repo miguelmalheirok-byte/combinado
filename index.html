@@ -50,17 +50,20 @@
       <form id="form-auth">
         <div class="campo">
           <label for="input-usuario-auth">Usuário</label>
-          <input type="text" id="input-usuario-auth" placeholder="Ex.: miguel" required />
+          <input type="text" id="input-usuario-auth" placeholder="Ex.: miguel" autocomplete="username" autocapitalize="none" spellcheck="false" required />
+          <p id="auth-dica-usuario" class="campo-dica" hidden>Use de 3 a 30 letras, números, ponto, hífen ou sublinhado. Sem espaços.</p>
         </div>
 
         <div class="campo">
           <label for="input-senha-auth">Senha</label>
-          <input type="password" id="input-senha-auth" required />
+          <input type="password" id="input-senha-auth" autocomplete="current-password" required />
+          <p id="auth-dica-senha" class="campo-dica" hidden>Mínimo de 6 caracteres. Não há recuperação de senha, então anote a sua.</p>
         </div>
 
         <p id="auth-erro" class="auth-erro" hidden></p>
 
         <button type="submit" class="botao botao-primario auth-botao-principal" id="btn-auth-principal">Entrar</button>
+        <p id="auth-config-erro" class="auth-erro" role="alert" hidden>Não foi possível carregar o serviço de contas. Confira a conexão e recarregue a página.</p>
       </form>
 
       <p class="auth-alternar">
@@ -93,8 +96,13 @@
 
   <div class="conteudo-cabecalho">
     <h1>Trabalhos</h1>
-    <button type="button" id="btn-novo-trabalho" class="botao botao-primario">+ Novo trabalho</button>
+    <div class="conteudo-cabecalho-acoes">
+      <button type="button" id="btn-entrar-codigo" class="botao botao-secundario">Entrar com código</button>
+      <button type="button" id="btn-novo-trabalho" class="botao botao-primario">+ Novo trabalho</button>
+    </div>
   </div>
+
+  <p id="faixa-aviso" class="faixa-aviso" role="status" aria-live="polite" hidden></p>
 
   <div id="progresso-trabalhos" class="progresso-trabalhos" hidden>
     <p id="progresso-texto" class="progresso-texto"></p>
@@ -259,14 +267,18 @@
     <div class="integrantes-secao">
       <h3 class="integrantes-titulo">Integrantes</h3>
       <ul id="lista-integrantes" class="lista-integrantes"></ul>
-      <p id="integrantes-vazio" class="integrantes-vazio" hidden>Nenhum integrante cadastrado ainda. Cadastre os integrantes primeiro; depois escolha o responsável de cada tarefa.</p>
-      <form id="form-integrante" class="form-integrante">
-        <div class="campo campo-integrante">
-          <label for="input-integrante-nome" class="rotulo-oculto">Nome do integrante</label>
-          <input type="text" id="input-integrante-nome" placeholder="Nome" />
+
+      <div class="codigo-grupo">
+        <span class="codigo-grupo-rotulo">Código do grupo</span>
+        <div class="codigo-grupo-linha">
+          <strong id="codigo-grupo-valor" class="codigo-grupo-valor" aria-label="Código do grupo"></strong>
+          <button type="button" id="btn-copiar-codigo" class="botao botao-texto">Copiar</button>
+          <button type="button" id="btn-trocar-codigo" class="botao botao-texto" hidden>Trocar código</button>
         </div>
-        <button type="submit" class="botao botao-texto">Adicionar</button>
-      </form>
+        <p class="codigo-grupo-dica">Passe esse código para os colegas. Cada um cria a própria conta e toca em "Entrar com código" na lista de trabalhos.</p>
+      </div>
+
+      <button type="button" id="btn-sair-grupo" class="botao botao-texto botao-sair-grupo" hidden>Sair deste trabalho</button>
     </div>
 
     <div>
@@ -285,14 +297,39 @@
         <select id="input-tarefa-responsavel">
           <option value="">Sem responsável</option>
         </select>
-        <div id="aviso-responsavel" class="aviso-responsavel" role="status" hidden>
-          <span>Para escolher o responsável, cadastre antes os integrantes do grupo.</span>
-          <button type="button" id="btn-ir-integrantes" class="botao botao-texto">Cadastrar integrantes</button>
-        </div>
       </div>
       <button type="submit" class="botao botao-primario">Adicionar tarefa</button>
     </form>
 
+  </div>
+</dialog>
+
+<!-- ===================== DIÁLOGO: ENTRAR COM CÓDIGO ===================== -->
+<dialog id="dialog-codigo">
+  <form id="form-codigo" method="dialog">
+    <h2>Entrar em um trabalho</h2>
+    <p class="dialog-texto">Digite o código que o colega passou. Ele aparece em "Tarefas", na seção Integrantes.</p>
+    <div class="campo">
+      <label for="input-codigo">Código do grupo</label>
+      <input type="text" id="input-codigo" class="input-codigo" maxlength="12" placeholder="Ex.: K7M2QX" autocomplete="off" autocapitalize="characters" spellcheck="false" required />
+    </div>
+    <p id="codigo-erro" class="auth-erro" role="alert" hidden></p>
+    <div class="dialog-acoes">
+      <button type="button" class="botao botao-texto" data-fechar-codigo>Cancelar</button>
+      <button type="submit" class="botao botao-primario" id="btn-codigo-entrar">Entrar</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- ===================== DIÁLOGO: IMPORTAR TRABALHOS ANTIGOS ===================== -->
+<dialog id="dialog-importar">
+  <div class="dialog-confirmar-corpo">
+    <h2 id="dialog-importar-titulo">Trazer seus trabalhos?</h2>
+    <p id="dialog-importar-texto"></p>
+    <div class="dialog-acoes dialog-acoes-confirmar">
+      <button type="button" id="btn-importar-nao" class="botao botao-texto">Não importar</button>
+      <button type="button" id="btn-importar-sim" class="botao botao-primario">Importar</button>
+    </div>
   </div>
 </dialog>
 
@@ -314,6 +351,9 @@
 </div>
 <!-- fim #app-principal -->
 
+<script src="js/vendor/supabase.js"></script>
+<script src="js/config.js"></script>
+<script src="js/dados.js"></script>
 <script src="js/app.js"></script>
 </body>
 </html>

@@ -1,60 +1,13 @@
 /* =========================================================
-   Meus trabalhos — lógica do app
-   Protótipo 01: título, matéria, prazo, tipo, cor, status, excluir
+   Combinado — lógica do app
+   Contas e dados no Supabase (js/dados.js); tela e regras aqui.
    ========================================================= */
 (function () {
   "use strict";
 
-  var CHAVE_USUARIOS = "combinado:usuarios:v1";
-  var CHAVE_SESSAO = "combinado:sessao:v1";
-  var CHAVE_ARMAZENAMENTO_BASE = "trabalhos:v1";
+  var usuarioAtual = null;   // { id, usuario, nome, importou_local }
 
-  var usuarioAtual = null;
-
-  /* ---------------- contas (cadastro/login) ---------------- */
-
-  function carregarUsuarios() {
-    try {
-      var bruto = localStorage.getItem(CHAVE_USUARIOS);
-      if (!bruto) return {};
-      var salvo = JSON.parse(bruto);
-      return (salvo && typeof salvo === "object") ? salvo : {};
-    } catch (erro) {
-      return {};
-    }
-  }
-
-  function salvarUsuarios(usuarios) {
-    try {
-      localStorage.setItem(CHAVE_USUARIOS, JSON.stringify(usuarios));
-    } catch (erro) {
-      // localStorage indisponível — segue só em memória
-    }
-  }
-
-  function salvarSessao(usuario) {
-    try {
-      localStorage.setItem(CHAVE_SESSAO, usuario);
-    } catch (erro) {
-      // ignora
-    }
-  }
-
-  function carregarSessao() {
-    try {
-      return localStorage.getItem(CHAVE_SESSAO) || "";
-    } catch (erro) {
-      return "";
-    }
-  }
-
-  function limparSessao() {
-    try {
-      localStorage.removeItem(CHAVE_SESSAO);
-    } catch (erro) {
-      // ignora
-    }
-  }
+  /* ---------------- tela de login / cadastro ---------------- */
 
   var telaAuth = document.getElementById("tela-auth");
   var appPrincipal = document.getElementById("app-principal");
@@ -62,6 +15,9 @@
   var inputUsuarioAuth = document.getElementById("input-usuario-auth");
   var inputSenhaAuth = document.getElementById("input-senha-auth");
   var authErro = document.getElementById("auth-erro");
+  var authConfigErro = document.getElementById("auth-config-erro");
+  var authDicaUsuario = document.getElementById("auth-dica-usuario");
+  var authDicaSenha = document.getElementById("auth-dica-senha");
   var authTitulo = document.getElementById("auth-titulo");
   var btnAuthPrincipal = document.getElementById("btn-auth-principal");
   var btnAuthAlternar = document.getElementById("btn-auth-alternar");
@@ -70,6 +26,19 @@
   var btnSair = document.getElementById("btn-sair");
 
   var modoCadastro = false;
+  var ocupadoAuth = false;
+  var saindo = false;
+
+  var MENSAGENS_AUTH = {
+    usuario_existe: "Esse usuário já existe. Tente entrar.",
+    credenciais: "Usuário ou senha incorretos.",
+    senha_curta: "A senha precisa ter pelo menos 6 caracteres.",
+    usuario_invalido: "Usuário inválido. Use de 3 a 30 letras, números, ponto, hífen ou sublinhado, sem espaços.",
+    confirmacao_ligada: "Conta criada, mas o servidor está pedindo confirmação por e-mail. Avise a equipe do Combinado.",
+    email_recusado: "O servidor recusou o cadastro. Tente outro usuário; se persistir, avise a equipe.",
+    rede: "Sem conexão com o servidor. Confira a internet e tente de novo.",
+    config: "Não foi possível carregar o serviço de contas. Recarregue a página."
+  };
 
   function mostrarErroAuth(mensagem) {
     authErro.textContent = mensagem;
@@ -81,81 +50,105 @@
     authErro.textContent = "";
   }
 
-  function alternarModoAuth() {
-    modoCadastro = !modoCadastro;
-    limparErroAuth();
-    if (modoCadastro) {
-      authTitulo.textContent = "Criar conta";
-      btnAuthPrincipal.textContent = "Criar conta";
-      authAlternarTexto.textContent = "Já tem conta?";
-      btnAuthAlternar.textContent = "Entrar";
-    } else {
-      authTitulo.textContent = "Entrar";
-      btnAuthPrincipal.textContent = "Entrar";
-      authAlternarTexto.textContent = "Não tem conta?";
-      btnAuthAlternar.textContent = "Criar conta";
-    }
+  function rotuloBotaoAuth() {
+    return modoCadastro ? "Criar conta" : "Entrar";
   }
 
-  btnAuthAlternar.addEventListener("click", alternarModoAuth);
+  function definirModoAuth(cadastro) {
+    modoCadastro = cadastro;
+    limparErroAuth();
+    authTitulo.textContent = rotuloBotaoAuth();
+    btnAuthPrincipal.textContent = rotuloBotaoAuth();
+    authAlternarTexto.textContent = cadastro ? "Já tem conta?" : "Não tem conta?";
+    btnAuthAlternar.textContent = cadastro ? "Entrar" : "Criar conta";
+    authDicaUsuario.hidden = !cadastro;
+    authDicaSenha.hidden = !cadastro;
+    inputSenhaAuth.setAttribute("autocomplete", cadastro ? "new-password" : "current-password");
+  }
+
+  btnAuthAlternar.addEventListener("click", function () {
+    definirModoAuth(!modoCadastro);
+  });
 
   formAuth.addEventListener("submit", function (evento) {
     evento.preventDefault();
+    if (ocupadoAuth) return;
     limparErroAuth();
 
     var usuario = inputUsuarioAuth.value.trim();
     var senha = inputSenhaAuth.value;
     if (!usuario || !senha) return;
 
-    var usuarios = carregarUsuarios();
-
-    if (modoCadastro) {
-      if (usuarios[usuario]) {
-        mostrarErroAuth("Esse usuário já existe. Tente entrar.");
-        return;
-      }
-      usuarios[usuario] = { senha: senha };
-      salvarUsuarios(usuarios);
-      entrarComoUsuario(usuario);
-    } else {
-      var conta = usuarios[usuario];
-      if (!conta || conta.senha !== senha) {
-        mostrarErroAuth("Usuário ou senha incorretos.");
-        return;
-      }
-      entrarComoUsuario(usuario);
+    if (!Dados.iniciar()) {
+      authConfigErro.hidden = false;
+      return;
     }
+
+    ocupadoAuth = true;
+    btnAuthPrincipal.disabled = true;
+    btnAuthPrincipal.textContent = modoCadastro ? "Criando…" : "Entrando…";
+    atualizarOcupado();
+
+    var promessa = modoCadastro ? Dados.cadastrar(usuario, senha) : Dados.entrar(usuario, senha);
+    promessa.then(function (perfil) {
+      return entrarComoPerfil(perfil);
+    }).catch(function (e) {
+      mostrarErroAuth(MENSAGENS_AUTH[e && e.codigo] || "Algo deu errado. Tente de novo.");
+    }).then(function () {
+      ocupadoAuth = false;
+      btnAuthPrincipal.disabled = false;
+      btnAuthPrincipal.textContent = rotuloBotaoAuth();
+      atualizarOcupado();
+    });
   });
 
-  function entrarComoUsuario(usuario) {
-    usuarioAtual = usuario;
-    salvarSessao(usuario);
-    CHAVE_ARMAZENAMENTO = CHAVE_ARMAZENAMENTO_BASE + ":" + usuario;
+  function mostrarTelaAuth() {
+    appPrincipal.hidden = true;
+    telaAuth.hidden = false;
+    inputUsuarioAuth.focus();
+  }
+
+  function entrarComoPerfil(perfil) {
+    usuarioAtual = perfil;
     formAuth.reset();
     telaAuth.hidden = true;
     appPrincipal.hidden = false;
-    cabecalhoUsuarioNome.textContent = usuario;
+    cabecalhoUsuarioNome.textContent = perfil.nome || perfil.usuario;
     state.trabalhos = [];
-    carregarEstado();
+    cargaEstado = "carregando";
     renderTrabalhos();
+    return recarregar().then(function () {
+      if (usuarioAtual !== perfil) return;
+      Dados.ouvirMudancas(function () { agendarRecarga(250); });
+      oferecerImportacao();
+    });
+  }
+
+  function voltarParaLogin(mensagem) {
+    usuarioAtual = null;
+    clearTimeout(timerRecarga);
+    timerRecarga = null;
+    pendentes = 0;
+    recarregarDepois = false;
+    Dados.pararDeOuvir();
+    state.trabalhos = [];
+    [dialogTrabalho, dialogTarefas, dialogConfirmar, dialogCodigo, dialogImportar].forEach(function (d) {
+      if (d.open) d.close();
+    });
+    faixaAviso.hidden = true;
+    definirModoAuth(false);
+    mostrarTelaAuth();
+    if (mensagem) mostrarErroAuth(mensagem);
+    atualizarOcupado();
   }
 
   btnSair.addEventListener("click", function () {
-    limparSessao();
-    usuarioAtual = null;
-    state.trabalhos = [];
-    appPrincipal.hidden = true;
-    telaAuth.hidden = false;
-    modoCadastro = false;
-    authTitulo.textContent = "Entrar";
-    btnAuthPrincipal.textContent = "Entrar";
-    authAlternarTexto.textContent = "Não tem conta?";
-    btnAuthAlternar.textContent = "Criar conta";
-    limparErroAuth();
-    inputUsuarioAuth.focus();
+    saindo = true;
+    Dados.sair().catch(function () { /* mesmo com erro de rede, sai desta tela */ }).then(function () {
+      saindo = false;
+      voltarParaLogin();
+    });
   });
-
-  var CHAVE_ARMAZENAMENTO = CHAVE_ARMAZENAMENTO_BASE;
 
   var STATUS_LABEL = {
     "nao-comecei": "Não comecei",
@@ -172,40 +165,172 @@
   };
 
   var state = {
-    trabalhos: []   // { id, titulo, materia, prazo, tipo, cor, observacoes, status }
+    trabalhos: []   // { id, titulo, materia, prazo, tipo, cor, observacoes, status, codigo, donoId, membros[], tarefas[] }
   };
 
-  /* ---------------- persistência ---------------- */
 
-  function salvarEstado() {
-    try {
-      localStorage.setItem(CHAVE_ARMAZENAMENTO, JSON.stringify(state));
-    } catch (erro) {
-      // localStorage indisponível — segue só em memória
+  /* ---------------- estado em memória + sincronização ---------------- */
+
+  var cargaEstado = "carregando";   // carregando | ok | erro
+  var pendentes = 0;                // gravações em andamento
+  var recarregarDepois = false;
+  var recargaEmAndamento = false;
+  var timerRecarga = null;
+  var timerAviso = null;
+
+  var faixaAviso = document.getElementById("faixa-aviso");
+
+  // Marca o <html> enquanto há algo em andamento (útil para estilo e para os testes).
+  function atualizarOcupado() {
+    var ocupado = pendentes > 0 || recargaEmAndamento || timerRecarga !== null || ocupadoAuth;
+    document.documentElement.setAttribute("data-ocupado", ocupado ? "1" : "0");
+  }
+
+  function mostrarAviso(texto, fixo) {
+    clearTimeout(timerAviso);
+    faixaAviso.textContent = texto;
+    faixaAviso.hidden = false;
+    if (!fixo) {
+      timerAviso = setTimeout(function () { faixaAviso.hidden = true; }, 6000);
     }
   }
 
-  function carregarEstado() {
-    var bruto;
-    try {
-      bruto = localStorage.getItem(CHAVE_ARMAZENAMENTO);
-    } catch (erro) {
-      bruto = null;
+  function esconderAviso() {
+    clearTimeout(timerAviso);
+    faixaAviso.hidden = true;
+  }
+
+  var MENSAGENS_ESCRITA = {
+    rede: "Sem conexão: a última alteração não foi salva.",
+    somente_dono: "Só quem criou o trabalho pode fazer isso.",
+    responsavel_invalido: "Esse responsável não faz mais parte do grupo.",
+    sem_sessao: "Sua sessão expirou. Entre de novo."
+  };
+
+  function agendarRecarga(atraso) {
+    clearTimeout(timerRecarga);
+    timerRecarga = setTimeout(function () {
+      timerRecarga = null;
+      recarregar();
+    }, atraso);
+    atualizarOcupado();
+  }
+
+  function recarregar() {
+    if (!usuarioAtual) return Promise.resolve();
+    if (pendentes > 0 || recargaEmAndamento) {
+      recarregarDepois = true;
+      return Promise.resolve();
     }
-    if (!bruto) return;
-    try {
-      var salvo = JSON.parse(bruto);
-      if (salvo && Array.isArray(salvo.trabalhos)) {
-        state.trabalhos = salvo.trabalhos;
+    var daVez = usuarioAtual;
+    recargaEmAndamento = true;
+    atualizarOcupado();
+    return Dados.carregar().then(function (lista) {
+      recargaEmAndamento = false;
+      if (usuarioAtual !== daVez) return;
+      if (pendentes > 0) {
+        recarregarDepois = true;
+        return;
       }
-    } catch (erro) {
-      // JSON corrompido — ignora e começa do zero
+      state.trabalhos = lista;
+      cargaEstado = "ok";
+      esconderAviso();
+      depoisDeCarregar();
+    }).catch(function (e) {
+      recargaEmAndamento = false;
+      if (usuarioAtual !== daVez) return;
+      if (e && e.codigo === "sem_sessao") {
+        voltarParaLogin("Sua sessão expirou. Entre de novo.");
+        return;
+      }
+      if (cargaEstado === "carregando") cargaEstado = "erro";
+      mostrarAviso("Sem conexão com o servidor. Vamos tentar de novo.", true);
+      renderTrabalhos();
+      agendarRecarga(4000);
+    }).then(function () {
+      atualizarOcupado();
+      if (recarregarDepois && pendentes === 0 && !recargaEmAndamento && usuarioAtual) {
+        recarregarDepois = false;
+        agendarRecarga(0);
+      }
+    });
+  }
+
+  // Toda gravação passa por aqui: conta como "pendente", avisa se falhar
+  // e, no fim, confere com o servidor (que desfaz o que não foi salvo).
+  function escrever(funcaoQueGrava) {
+    pendentes += 1;
+    atualizarOcupado();
+    var inicio;
+    try {
+      inicio = Promise.resolve(funcaoQueGrava());
+    } catch (e) {
+      inicio = Promise.reject(e);
+    }
+    return inicio.catch(function (e) {
+      mostrarAviso(MENSAGENS_ESCRITA[e && e.codigo] || "Não foi possível salvar. Tente de novo.", false);
+      if (e && e.codigo === "sem_sessao") voltarParaLogin("Sua sessão expirou. Entre de novo.");
+    }).then(function () {
+      pendentes = Math.max(0, pendentes - 1);
+      if (pendentes === 0 && usuarioAtual) agendarRecarga(0);
+      atualizarOcupado();
+    });
+  }
+
+  function achar(id) {
+    for (var i = 0; i < state.trabalhos.length; i++) {
+      if (state.trabalhos[i].id === id) return state.trabalhos[i];
+    }
+    return null;
+  }
+
+  function ehTemporario(item) {
+    return !!item && String(item.id).indexOf("tmp-") === 0;
+  }
+
+  function gerarIdTemporario() {
+    return "tmp-" + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+  }
+
+  function souDono(trabalho) {
+    return !!usuarioAtual && trabalho.donoId === usuarioAtual.id;
+  }
+
+  function nomeDoMembro(trabalho, id) {
+    var lista = (trabalho && trabalho.membros) || [];
+    for (var i = 0; i < lista.length; i++) {
+      if (lista[i].id === id) return lista[i].nome;
+    }
+    return "";
+  }
+
+  // Depois de cada carga: redesenha a lista e atualiza janelas abertas.
+  function depoisDeCarregar() {
+    renderTrabalhos();
+
+    if (trabalhoTarefasAtual) {
+      var atualizado = achar(trabalhoTarefasAtual.id);
+      if (!atualizado) {
+        trabalhoTarefasAtual = null;
+        if (dialogTarefas.open) dialogTarefas.close();
+        mostrarAviso("Esse trabalho não está mais disponível para você.", false);
+      } else {
+        trabalhoTarefasAtual = atualizado;
+        renderIntegrantes();
+        renderTarefas();
+      }
+    }
+
+    if (trabalhoEmEdicaoId && !achar(trabalhoEmEdicaoId)) {
+      trabalhoEmEdicaoId = null;
+      if (dialogTrabalho.open) dialogTrabalho.close();
+      mostrarAviso("Esse trabalho não está mais disponível para você.", false);
     }
   }
 
-  function gerarId() {
-    return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
-  }
+  document.addEventListener("visibilitychange", function () {
+    if (!document.hidden && usuarioAtual) agendarRecarga(0);
+  });
 
   /* ---------------- tema claro / escuro ---------------- */
 
@@ -286,7 +411,7 @@
   var inputPrazo = document.getElementById("input-prazo-trabalho");
   var inputObservacoes = document.getElementById("input-observacoes-trabalho");
 
-  var trabalhoEmEdicao = null;
+  var trabalhoEmEdicaoId = null;
 
   var dialogConfirmar = document.getElementById("dialog-confirmar");
   var dialogConfirmarTexto = document.getElementById("dialog-confirmar-texto");
@@ -361,7 +486,7 @@
   });
 
   function abrirDialogNovoTrabalho() {
-    trabalhoEmEdicao = null;
+    trabalhoEmEdicaoId = null;
     dialogTrabalhoTitulo.textContent = "Novo trabalho";
     formTrabalho.reset();
     atualizarPrevia();
@@ -370,7 +495,7 @@
   }
 
   function abrirDialogEditarTrabalho(trabalho) {
-    trabalhoEmEdicao = trabalho;
+    trabalhoEmEdicaoId = trabalho.id;
     dialogTrabalhoTitulo.textContent = "Editar trabalho";
     inputTitulo.value = trabalho.titulo;
     inputMateria.value = trabalho.materia;
@@ -402,54 +527,95 @@
     evento.preventDefault();
     var titulo = inputTitulo.value.trim();
     var materia = inputMateria.value.trim();
-    if (!titulo || !materia) return;
+    if (!titulo || !materia || !usuarioAtual) return;
 
     var tipoSelecionado = formTrabalho.querySelector('input[name="tipo-trabalho"]:checked');
     var corSelecionada = formTrabalho.querySelector('input[name="cor-trabalho"]:checked');
-    var cor = corSelecionada ? corValida(corSelecionada.value) : "";
-    var observacoes = inputObservacoes.value.trim();
+    var campos = {
+      titulo: titulo,
+      materia: materia,
+      prazo: inputPrazo.value || "",
+      tipo: tipoSelecionado ? tipoSelecionado.value : "individual",
+      cor: corSelecionada ? corValida(corSelecionada.value) : "",
+      observacoes: inputObservacoes.value.trim()
+    };
 
-    if (trabalhoEmEdicao) {
-      trabalhoEmEdicao.titulo = titulo;
-      trabalhoEmEdicao.materia = materia;
-      trabalhoEmEdicao.prazo = inputPrazo.value || "";
-      trabalhoEmEdicao.tipo = tipoSelecionado ? tipoSelecionado.value : "individual";
-      trabalhoEmEdicao.cor = cor;
-      trabalhoEmEdicao.observacoes = observacoes;
-      trabalhoEmEdicao = null;
+    if (trabalhoEmEdicaoId) {
+      var emEdicao = achar(trabalhoEmEdicaoId);
+      trabalhoEmEdicaoId = null;
+      if (!emEdicao) {
+        dialogTrabalho.close();
+        mostrarAviso("Esse trabalho não está mais disponível para você.", false);
+        renderTrabalhos();
+        return;
+      }
+      Object.keys(campos).forEach(function (k) { emEdicao[k] = campos[k]; });
+      escrever(function () { return Dados.atualizarTrabalho(emEdicao.id, campos); });
     } else {
-      state.trabalhos.push({
-        id: gerarId(),
-        titulo: titulo,
-        materia: materia,
-        prazo: inputPrazo.value || "",
-        tipo: tipoSelecionado ? tipoSelecionado.value : "individual",
-        cor: cor,
-        observacoes: observacoes,
+      var novo = {
+        id: gerarIdTemporario(),
         status: "nao-comecei",
-        tarefas: [],
-        integrantes: []
-      });
+        prontoAutomatico: false,
+        codigo: "",
+        donoId: usuarioAtual.id,
+        membros: [{ id: usuarioAtual.id, usuario: usuarioAtual.usuario, nome: usuarioAtual.nome || usuarioAtual.usuario, papel: "dono" }],
+        tarefas: []
+      };
+      Object.keys(campos).forEach(function (k) { novo[k] = campos[k]; });
+      state.trabalhos.push(novo);
+      escrever(function () { return Dados.criarTrabalho(novo, usuarioAtual.id); });
     }
 
-    salvarEstado();
     dialogTrabalho.close();
     renderTrabalhos();
   });
 
   /* ---------------- lista de trabalhos ---------------- */
 
-  function pedirConfirmacaoExclusao(trabalho) {
-    dialogConfirmarTitulo.textContent = 'Excluir "' + trabalho.titulo + '"?';
-    dialogConfirmarTexto.textContent = "O trabalho some da lista e não dá para desfazer.";
+  function pedirConfirmacao(opcoes) {
+    dialogConfirmarTitulo.textContent = opcoes.titulo;
+    dialogConfirmarTexto.textContent = opcoes.texto;
+    btnConfirmarExclusao.textContent = opcoes.rotulo;
     btnConfirmarExclusao.onclick = function () {
-      state.trabalhos = state.trabalhos.filter(function (t) { return t.id !== trabalho.id; });
-      salvarEstado();
       dialogConfirmar.close();
-      renderTrabalhos();
+      opcoes.aoConfirmar();
     };
     dialogConfirmar.showModal();
   }
+
+  function removerDaListaLocal(trabalho) {
+    state.trabalhos = state.trabalhos.filter(function (t) { return t.id !== trabalho.id; });
+    renderTrabalhos();
+  }
+
+  function pedirConfirmacaoExclusao(trabalho) {
+    var compartilhado = trabalho.membros && trabalho.membros.length > 1;
+    pedirConfirmacao({
+      titulo: 'Excluir "' + trabalho.titulo + '"?',
+      texto: compartilhado
+        ? "O trabalho some para todos os integrantes e não dá para desfazer."
+        : "O trabalho some da lista e não dá para desfazer.",
+      rotulo: "Excluir trabalho",
+      aoConfirmar: function () {
+        removerDaListaLocal(trabalho);
+        escrever(function () { return Dados.excluirTrabalho(trabalho.id); });
+      }
+    });
+  }
+
+  function pedirConfirmacaoSaida(trabalho) {
+    pedirConfirmacao({
+      titulo: 'Sair de "' + trabalho.titulo + '"?',
+      texto: "O trabalho some da sua lista. Para voltar, é preciso entrar de novo com o código do grupo.",
+      rotulo: "Sair do trabalho",
+      aoConfirmar: function () {
+        if (dialogTarefas.open) dialogTarefas.close();
+        removerDaListaLocal(trabalho);
+        escrever(function () { return Dados.sairDoTrabalho(trabalho.id, usuarioAtual.id); });
+      }
+    });
+  }
+
 
   function obterMateriasUnicas() {
     var vistas = {};
@@ -536,7 +702,9 @@
     listaTrabalhos.innerHTML = "";
 
     if (state.trabalhos.length === 0) {
-      listaVazia.textContent = TEXTO_LISTA_VAZIA;
+      listaVazia.textContent = cargaEstado === "carregando" ? "Carregando seus trabalhos…"
+        : cargaEstado === "erro" ? "Não foi possível carregar seus trabalhos agora."
+        : TEXTO_LISTA_VAZIA;
       listaVazia.hidden = false;
       return;
     }
@@ -550,12 +718,8 @@
     }
     listaVazia.hidden = true;
 
-    var precisaSalvarBackfill = false;
     visiveis.forEach(function (trabalho) {
-      if (trabalho.tipo === "grupo" && garantirIntegrantesAPartirDasTarefas(trabalho)) {
-        precisaSalvarBackfill = true;
-      }
-
+      var salvando = ehTemporario(trabalho);
       var item = document.createElement("li");
       item.className = "trabalho-card";
       item.setAttribute("data-status", trabalho.status);
@@ -595,8 +759,8 @@
       var meta = document.createElement("p");
       meta.className = "trabalho-meta";
       var textoMeta = trabalho.materia;
-      if (trabalho.tipo === "grupo" && Array.isArray(trabalho.integrantes) && trabalho.integrantes.length > 0) {
-        textoMeta += " · integrantes: " + trabalho.integrantes.join(", ");
+      if (trabalho.tipo === "grupo" && Array.isArray(trabalho.membros) && trabalho.membros.length > 1) {
+        textoMeta += " · integrantes: " + trabalho.membros.map(function (m) { return m.nome; }).join(", ");
       }
       meta.textContent = textoMeta;
       item.appendChild(meta);
@@ -617,7 +781,7 @@
       if (semTarefas) {
         var dica = document.createElement("p");
         dica.className = "trabalho-dica";
-        dica.textContent = "Próximo passo: toque em Tarefas para cadastrar os integrantes e dividir o trabalho.";
+        dica.textContent = "Próximo passo: toque em Tarefas, passe o código do grupo aos colegas e divida o trabalho.";
         item.appendChild(dica);
       }
 
@@ -626,6 +790,7 @@
 
       var selectStatus = document.createElement("select");
       selectStatus.setAttribute("aria-label", "Status de " + trabalho.titulo);
+      selectStatus.disabled = salvando;
       Object.keys(STATUS_LABEL).forEach(function (chave) {
         var opcao = document.createElement("option");
         opcao.value = chave;
@@ -636,8 +801,11 @@
       selectStatus.addEventListener("change", function () {
         trabalho.status = selectStatus.value;
         trabalho.prontoAutomatico = false;
-        salvarEstado();
+        var status = trabalho.status;
         renderTrabalhos();
+        escrever(function () {
+          return Dados.atualizarTrabalho(trabalho.id, { status: status, prontoAutomatico: false });
+        });
       });
       acoes.appendChild(selectStatus);
 
@@ -648,6 +816,7 @@
         botaoTarefas.type = "button";
         botaoTarefas.className = "botao botao-tarefas" + (semTarefas ? " botao-tarefas-destaque" : "");
         botaoTarefas.textContent = "Tarefas (" + tarefasFeitas + "/" + tarefasDoTrabalho.length + ")";
+        botaoTarefas.disabled = salvando;
         botaoTarefas.addEventListener("click", function () {
           abrirDialogTarefas(trabalho);
         });
@@ -658,6 +827,7 @@
       botaoEditar.type = "button";
       botaoEditar.className = "botao botao-texto";
       botaoEditar.textContent = "Editar";
+      botaoEditar.disabled = salvando;
       botaoEditar.addEventListener("click", function () {
         abrirDialogEditarTrabalho(trabalho);
       });
@@ -666,46 +836,21 @@
       var botaoExcluir = document.createElement("button");
       botaoExcluir.type = "button";
       botaoExcluir.className = "botao botao-texto";
-      botaoExcluir.textContent = "Excluir";
+      var dono = souDono(trabalho);
+      botaoExcluir.textContent = dono ? "Excluir" : "Sair";
+      botaoExcluir.disabled = salvando;
       botaoExcluir.addEventListener("click", function () {
-        pedirConfirmacaoExclusao(trabalho);
+        if (dono) pedirConfirmacaoExclusao(trabalho);
+        else pedirConfirmacaoSaida(trabalho);
       });
       acoes.appendChild(botaoExcluir);
 
       item.appendChild(acoes);
       listaTrabalhos.appendChild(item);
     });
-
-    if (precisaSalvarBackfill) {
-      salvarEstado();
-    }
   }
 
   /* ---------------- tarefas (divisão em trabalhos de grupo) ---------------- */
-
-  // Preenche "integrantes" uma única vez com nomes que já apareciam como responsável
-  // em tarefas criadas antes dessa lista existir (dados antigos). Depois dessa primeira
-  // vez, marca o trabalho como já inicializado, pra não desfazer remoções manuais do
-  // usuário mais tarde (ex.: se alguém sai do grupo mas ainda aparece numa tarefa antiga).
-  function garantirIntegrantesAPartirDasTarefas(trabalho) {
-    if (!Array.isArray(trabalho.integrantes)) trabalho.integrantes = [];
-    if (trabalho.integrantesInicializados) return false;
-    trabalho.integrantesInicializados = true;
-
-    if (Array.isArray(trabalho.tarefas)) {
-      trabalho.tarefas.forEach(function (tarefa) {
-        if (!tarefa.responsavel) return;
-        var jaTem = trabalho.integrantes.some(function (n) {
-          return n.toLowerCase() === tarefa.responsavel.toLowerCase();
-        });
-        if (!jaTem) {
-          trabalho.integrantes.push(tarefa.responsavel);
-        }
-      });
-    }
-
-    return true;
-  }
 
   // Quando todas as tarefas do trabalho em grupo estão concluídas, o trabalho vai para "Pronto".
   // Se depois uma tarefa for reaberta ou entrar uma nova, volta para "Fazendo" (só quando foi o
@@ -726,6 +871,16 @@
     }
   }
 
+  // Aplica a regra acima e devolve a gravação do novo status, se ele mudou.
+  function statusPelasTarefasComGravacao(trabalho) {
+    var antes = trabalho.status + "|" + trabalho.prontoAutomatico;
+    aplicarStatusPelasTarefas(trabalho);
+    if (antes === trabalho.status + "|" + trabalho.prontoAutomatico) return null;
+    var status = trabalho.status;
+    var auto = trabalho.prontoAutomatico;
+    return function () { return Dados.atualizarTrabalho(trabalho.id, { status: status, prontoAutomatico: auto }); };
+  }
+
   var dialogTarefas = document.getElementById("dialog-tarefas");
   var dialogTarefasTitulo = document.getElementById("dialog-tarefas-titulo");
   var formTarefa = document.getElementById("form-tarefa");
@@ -734,29 +889,25 @@
   var listaTarefas = document.getElementById("lista-tarefas");
   var tarefasVazio = document.getElementById("tarefas-vazio");
 
-  var formIntegrante = document.getElementById("form-integrante");
-  var inputIntegranteNome = document.getElementById("input-integrante-nome");
   var listaIntegrantes = document.getElementById("lista-integrantes");
-  var integrantesVazio = document.getElementById("integrantes-vazio");
+  var codigoGrupoValor = document.getElementById("codigo-grupo-valor");
+  var btnCopiarCodigo = document.getElementById("btn-copiar-codigo");
+  var btnTrocarCodigo = document.getElementById("btn-trocar-codigo");
+  var btnSairGrupo = document.getElementById("btn-sair-grupo");
 
   var trabalhoTarefasAtual = null;
-  var avisoResponsavel = document.getElementById("aviso-responsavel");
-  var btnIrIntegrantes = document.getElementById("btn-ir-integrantes");
-
-  btnIrIntegrantes.addEventListener("click", function () {
-    inputIntegranteNome.scrollIntoView({ block: "center" });
-    inputIntegranteNome.focus();
-  });
 
   var tarefasAnelArco = document.getElementById("tarefas-anel-arco");
   var tarefasAnelNumero = document.getElementById("tarefas-anel-numero");
   var tarefasProgressoTitulo = document.getElementById("tarefas-progresso-titulo");
   var CIRCUNFERENCIA_ANEL = 213.63;
 
-  function indiceAvatar(nome) {
-    var lista = (trabalhoTarefasAtual && trabalhoTarefasAtual.integrantes) || [];
-    var i = lista.indexOf(nome);
-    return i === -1 ? 0 : i % 6;
+  function indiceAvatar(membroId) {
+    var lista = (trabalhoTarefasAtual && trabalhoTarefasAtual.membros) || [];
+    for (var i = 0; i < lista.length; i++) {
+      if (lista[i].id === membroId) return i % 6;
+    }
+    return 0;
   }
 
   function atualizarAnelTarefas() {
@@ -778,22 +929,19 @@
 
   function abrirDialogTarefas(trabalho) {
     trabalhoTarefasAtual = trabalho;
-    if (!Array.isArray(trabalho.tarefas)) trabalho.tarefas = [];
-    if (!Array.isArray(trabalho.integrantes)) trabalho.integrantes = [];
     dialogTarefasTitulo.textContent = trabalho.titulo;
     formTarefa.reset();
-    formIntegrante.reset();
     renderIntegrantes();
     renderTarefas();
     dialogTarefas.showModal();
-    inputIntegranteNome.focus();
+    inputTarefaTexto.focus();
   }
 
-  /* ---------------- integrantes do grupo ---------------- */
+  /* ---------------- integrantes do grupo (contas) e código ---------------- */
 
   function renderSelectResponsavel() {
     var selecionadoAntes = inputTarefaResponsavel.value;
-    var integrantes = (trabalhoTarefasAtual && trabalhoTarefasAtual.integrantes) || [];
+    var membros = (trabalhoTarefasAtual && trabalhoTarefasAtual.membros) || [];
 
     inputTarefaResponsavel.innerHTML = "";
 
@@ -802,96 +950,124 @@
     opcaoVazia.textContent = "Sem responsável";
     inputTarefaResponsavel.appendChild(opcaoVazia);
 
-    integrantes.forEach(function (nome) {
+    membros.forEach(function (m) {
       var opcao = document.createElement("option");
-      opcao.value = nome;
-      opcao.textContent = nome;
+      opcao.value = m.id;
+      opcao.textContent = m.nome;
       inputTarefaResponsavel.appendChild(opcao);
     });
 
-    if (integrantes.indexOf(selecionadoAntes) !== -1) {
-      inputTarefaResponsavel.value = selecionadoAntes;
-    }
-
-    // sem integrantes, o campo só tem "Sem responsável": avisa a ordem certa
-    var semIntegrantes = integrantes.length === 0;
-    avisoResponsavel.hidden = !semIntegrantes;
-    if (semIntegrantes) {
-      inputTarefaResponsavel.setAttribute("aria-describedby", "aviso-responsavel");
-    } else {
-      inputTarefaResponsavel.removeAttribute("aria-describedby");
-    }
+    var aindaExiste = membros.some(function (m) { return m.id === selecionadoAntes; });
+    inputTarefaResponsavel.value = aindaExiste ? selecionadoAntes : "";
   }
 
   function renderIntegrantes() {
     if (!trabalhoTarefasAtual) return;
-    var integrantes = trabalhoTarefasAtual.integrantes || [];
+    var trabalho = trabalhoTarefasAtual;
+    var dono = souDono(trabalho);
     listaIntegrantes.innerHTML = "";
-    integrantesVazio.hidden = integrantes.length !== 0;
 
-    integrantes.forEach(function (nome) {
+    (trabalho.membros || []).forEach(function (m) {
       var chip = document.createElement("li");
       chip.className = "integrante-chip";
 
       var avatar = document.createElement("span");
-      avatar.className = "avatar av-" + indiceAvatar(nome);
+      avatar.className = "avatar av-" + indiceAvatar(m.id);
       avatar.setAttribute("aria-hidden", "true");
-      avatar.textContent = nome.charAt(0).toUpperCase();
+      avatar.textContent = m.nome.charAt(0).toUpperCase();
       chip.appendChild(avatar);
 
       var nomeSpan = document.createElement("span");
-      nomeSpan.textContent = nome;
+      nomeSpan.textContent = m.nome + (m.id === usuarioAtual.id ? " (você)" : "");
       chip.appendChild(nomeSpan);
 
-      var botaoRemover = document.createElement("button");
-      botaoRemover.type = "button";
-      botaoRemover.textContent = "×";
-      botaoRemover.setAttribute("aria-label", "Remover " + nome + " do grupo");
-      botaoRemover.addEventListener("click", function () {
-        trabalhoTarefasAtual.integrantes = trabalhoTarefasAtual.integrantes.filter(function (n) {
-          return n !== nome;
+      if (m.papel === "dono") {
+        var selo = document.createElement("span");
+        selo.className = "integrante-papel";
+        selo.textContent = "dono";
+        chip.appendChild(selo);
+      } else if (dono) {
+        var botaoRemover = document.createElement("button");
+        botaoRemover.type = "button";
+        botaoRemover.textContent = "×";
+        botaoRemover.setAttribute("aria-label", "Remover " + m.nome + " do grupo");
+        botaoRemover.addEventListener("click", function () {
+          trabalho.membros = trabalho.membros.filter(function (x) { return x.id !== m.id; });
+          trabalho.tarefas.forEach(function (t) {
+            if (t.responsavelId === m.id) t.responsavelId = "";
+          });
+          renderIntegrantes();
+          renderTarefas();
+          renderTrabalhos();
+          escrever(function () { return Dados.sairDoTrabalho(trabalho.id, m.id); });
         });
-        salvarEstado();
-        renderIntegrantes();
-        renderSelectResponsavel();
-        renderTrabalhos();
-      });
-      chip.appendChild(botaoRemover);
+        chip.appendChild(botaoRemover);
+      }
 
       listaIntegrantes.appendChild(chip);
     });
 
+    codigoGrupoValor.textContent = trabalho.codigo || "…";
+    btnTrocarCodigo.hidden = !dono;
+    btnSairGrupo.hidden = dono;
+    btnCopiarCodigo.disabled = !trabalho.codigo;
+    btnTrocarCodigo.disabled = !trabalho.codigo;
+
     renderSelectResponsavel();
   }
 
-  formIntegrante.addEventListener("submit", function (evento) {
-    evento.preventDefault();
-    if (!trabalhoTarefasAtual) return;
-
-    var nome = inputIntegranteNome.value.trim();
-    if (!nome) return;
-
-    if (!Array.isArray(trabalhoTarefasAtual.integrantes)) trabalhoTarefasAtual.integrantes = [];
-    var jaExiste = trabalhoTarefasAtual.integrantes.some(function (n) {
-      return n.toLowerCase() === nome.toLowerCase();
-    });
-    if (jaExiste) {
-      inputIntegranteNome.value = "";
-      inputIntegranteNome.focus();
-      return;
+  var timerCopiado = null;
+  btnCopiarCodigo.addEventListener("click", function () {
+    if (!trabalhoTarefasAtual || !trabalhoTarefasAtual.codigo) return;
+    var codigo = trabalhoTarefasAtual.codigo;
+    function marcar(texto) {
+      btnCopiarCodigo.textContent = texto;
+      clearTimeout(timerCopiado);
+      timerCopiado = setTimeout(function () { btnCopiarCodigo.textContent = "Copiar"; }, 1800);
     }
+    function selecionarNaTela() {
+      try {
+        var faixa = document.createRange();
+        faixa.selectNodeContents(codigoGrupoValor);
+        var sel = window.getSelection();
+        sel.removeAllRanges();
+        sel.addRange(faixa);
+      } catch (e) { /* ignora */ }
+      marcar("Selecionado");
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(codigo).then(function () { marcar("Copiado"); }, selecionarNaTela);
+    } else {
+      selecionarNaTela();
+    }
+  });
 
-    trabalhoTarefasAtual.integrantes.push(nome);
-    salvarEstado();
-    formIntegrante.reset();
-    renderIntegrantes();
-    renderTrabalhos();
-    inputIntegranteNome.focus();
+  btnTrocarCodigo.addEventListener("click", function () {
+    var trabalho = trabalhoTarefasAtual;
+    if (!trabalho || !souDono(trabalho)) return;
+    pedirConfirmacao({
+      titulo: "Trocar o código do grupo?",
+      texto: "O código atual deixa de funcionar para quem ainda não entrou. Quem já está no grupo continua nele.",
+      rotulo: "Trocar código",
+      aoConfirmar: function () {
+        escrever(function () {
+          return Dados.trocarCodigo(trabalho.id).then(function (novo) {
+            trabalho.codigo = novo;
+            if (trabalhoTarefasAtual === trabalho) renderIntegrantes();
+          });
+        });
+      }
+    });
+  });
+
+  btnSairGrupo.addEventListener("click", function () {
+    if (trabalhoTarefasAtual) pedirConfirmacaoSaida(trabalhoTarefasAtual);
   });
 
   function renderTarefas() {
     if (!trabalhoTarefasAtual) return;
-    var tarefas = trabalhoTarefasAtual.tarefas || [];
+    var trabalho = trabalhoTarefasAtual;
+    var tarefas = trabalho.tarefas || [];
     listaTarefas.innerHTML = "";
     tarefasVazio.hidden = tarefas.length !== 0;
     atualizarAnelTarefas();
@@ -899,6 +1075,7 @@
     tarefas.forEach(function (tarefa) {
       var item = document.createElement("li");
       item.className = "tarefa-item" + (tarefa.feito ? " tarefa-feita" : "");
+      var salvando = ehTemporario(tarefa);
 
       var rotulo = document.createElement("label");
       rotulo.className = "tarefa-checkbox";
@@ -906,13 +1083,19 @@
       var checkbox = document.createElement("input");
       checkbox.type = "checkbox";
       checkbox.checked = !!tarefa.feito;
+      checkbox.disabled = salvando;
       checkbox.setAttribute("aria-label", "Marcar '" + tarefa.texto + "' como concluída");
       checkbox.addEventListener("change", function () {
         tarefa.feito = checkbox.checked;
-        aplicarStatusPelasTarefas(trabalhoTarefasAtual);
-        salvarEstado();
+        var gravaStatus = statusPelasTarefasComGravacao(trabalho);
+        var feito = tarefa.feito;
         renderTarefas();
         renderTrabalhos();
+        escrever(function () {
+          return Dados.atualizarTarefa(tarefa.id, { feito: feito }).then(function () {
+            if (gravaStatus) return gravaStatus();
+          });
+        });
       });
       rotulo.appendChild(checkbox);
 
@@ -923,10 +1106,11 @@
 
       item.appendChild(rotulo);
 
-      if (tarefa.responsavel) {
+      var nomeResp = tarefa.responsavelId ? nomeDoMembro(trabalho, tarefa.responsavelId) : "";
+      if (nomeResp) {
         var responsavelSpan = document.createElement("span");
-        responsavelSpan.className = "tarefa-responsavel av-" + indiceAvatar(tarefa.responsavel);
-        responsavelSpan.textContent = tarefa.responsavel;
+        responsavelSpan.className = "tarefa-responsavel av-" + indiceAvatar(tarefa.responsavelId);
+        responsavelSpan.textContent = nomeResp;
         item.appendChild(responsavelSpan);
       }
 
@@ -934,14 +1118,17 @@
       botaoExcluirTarefa.type = "button";
       botaoExcluirTarefa.className = "botao botao-texto tarefa-excluir";
       botaoExcluirTarefa.textContent = "Excluir";
+      botaoExcluirTarefa.disabled = salvando;
       botaoExcluirTarefa.addEventListener("click", function () {
-        trabalhoTarefasAtual.tarefas = trabalhoTarefasAtual.tarefas.filter(function (t) {
-          return t.id !== tarefa.id;
-        });
-        aplicarStatusPelasTarefas(trabalhoTarefasAtual);
-        salvarEstado();
+        trabalho.tarefas = trabalho.tarefas.filter(function (t) { return t.id !== tarefa.id; });
+        var gravaStatus = statusPelasTarefasComGravacao(trabalho);
         renderTarefas();
         renderTrabalhos();
+        escrever(function () {
+          return Dados.excluirTarefa(tarefa.id).then(function () {
+            if (gravaStatus) return gravaStatus();
+          });
+        });
       });
       item.appendChild(botaoExcluirTarefa);
 
@@ -952,25 +1139,27 @@
   formTarefa.addEventListener("submit", function (evento) {
     evento.preventDefault();
     if (!trabalhoTarefasAtual) return;
+    var trabalho = trabalhoTarefasAtual;
+    if (ehTemporario(trabalho)) return;
 
     var texto = inputTarefaTexto.value.trim();
     if (!texto) return;
-    var responsavel = inputTarefaResponsavel.value.trim();
+    var responsavelId = inputTarefaResponsavel.value;
 
-    if (!Array.isArray(trabalhoTarefasAtual.tarefas)) trabalhoTarefasAtual.tarefas = [];
-    trabalhoTarefasAtual.tarefas.push({
-      id: gerarId(),
-      texto: texto,
-      responsavel: responsavel,
-      feito: false
-    });
+    var nova = { id: gerarIdTemporario(), texto: texto, responsavelId: responsavelId, feito: false };
+    trabalho.tarefas.push(nova);
+    var gravaStatus = statusPelasTarefasComGravacao(trabalho);
 
-    aplicarStatusPelasTarefas(trabalhoTarefasAtual);
-    salvarEstado();
     formTarefa.reset();
     renderTarefas();
     renderTrabalhos();
     inputTarefaTexto.focus();
+
+    escrever(function () {
+      return Dados.criarTarefa(trabalho.id, texto, responsavelId).then(function () {
+        if (gravaStatus) return gravaStatus();
+      });
+    });
   });
 
   document.querySelectorAll("[data-fechar-tarefas]").forEach(function (botao) {
@@ -983,14 +1172,184 @@
     trabalhoTarefasAtual = null;
   });
 
+  /* ---------------- entrar em um trabalho com código ---------------- */
+
+  var dialogCodigo = document.getElementById("dialog-codigo");
+  var formCodigo = document.getElementById("form-codigo");
+  var inputCodigo = document.getElementById("input-codigo");
+  var codigoErro = document.getElementById("codigo-erro");
+  var btnCodigoEntrar = document.getElementById("btn-codigo-entrar");
+  var btnEntrarCodigo = document.getElementById("btn-entrar-codigo");
+
+  btnEntrarCodigo.addEventListener("click", function () {
+    formCodigo.reset();
+    codigoErro.hidden = true;
+    dialogCodigo.showModal();
+    inputCodigo.focus();
+  });
+
+  document.querySelectorAll("[data-fechar-codigo]").forEach(function (botao) {
+    botao.addEventListener("click", function () { dialogCodigo.close(); });
+  });
+
+  var MENSAGENS_CODIGO = {
+    codigo_invalido: "Código não encontrado. Confira com quem criou o trabalho.",
+    rede: "Sem conexão com o servidor. Tente de novo.",
+    sem_sessao: "Sua sessão expirou. Entre de novo."
+  };
+
+  formCodigo.addEventListener("submit", function (evento) {
+    evento.preventDefault();
+    var codigo = inputCodigo.value.trim();
+    if (!codigo || !usuarioAtual) return;
+    codigoErro.hidden = true;
+    btnCodigoEntrar.disabled = true;
+
+    pendentes += 1;
+    atualizarOcupado();
+    Dados.entrarPorCodigo(codigo).then(function () {
+      dialogCodigo.close();
+      mostrarAviso("Você entrou no trabalho.", false);
+    }).catch(function (e) {
+      codigoErro.textContent = MENSAGENS_CODIGO[e && e.codigo] || "Não foi possível entrar. Tente de novo.";
+      codigoErro.hidden = false;
+      inputCodigo.focus();
+    }).then(function () {
+      btnCodigoEntrar.disabled = false;
+      pendentes = Math.max(0, pendentes - 1);
+      if (pendentes === 0 && usuarioAtual) agendarRecarga(0);
+      atualizarOcupado();
+    });
+  });
+
+  /* ---------------- importar trabalhos antigos (localStorage) ---------------- */
+
+  var dialogImportar = document.getElementById("dialog-importar");
+  var dialogImportarTexto = document.getElementById("dialog-importar-texto");
+  var btnImportarSim = document.getElementById("btn-importar-sim");
+  var btnImportarNao = document.getElementById("btn-importar-nao");
+
+  var PREFIXO_LOCAL = "trabalhos:v1:";
+  var CHAVE_USUARIOS_ANTIGA = "combinado:usuarios:v1";
+
+  function limparNome(texto) {
+    return Dados.normalizarUsuario(String(texto || "").replace(/\s+/g, ""));
+  }
+
+  function lerTrabalhosLocais(perfil) {
+    var alvos = [limparNome(perfil.usuario), limparNome(perfil.nome)];
+    try {
+      for (var i = 0; i < localStorage.length; i++) {
+        var chave = localStorage.key(i);
+        if (!chave || chave.indexOf(PREFIXO_LOCAL) !== 0) continue;
+        if (alvos.indexOf(limparNome(chave.slice(PREFIXO_LOCAL.length))) === -1) continue;
+        var salvo = JSON.parse(localStorage.getItem(chave));
+        if (salvo && Array.isArray(salvo.trabalhos)) {
+          return salvo.trabalhos.filter(function (t) { return t && t.titulo; }).map(function (t) {
+            return {
+              titulo: String(t.titulo).slice(0, 120),
+              materia: String(t.materia || ""),
+              prazo: /^\d{4}-\d{2}-\d{2}$/.test(t.prazo || "") ? t.prazo : "",
+              tipo: t.tipo === "grupo" ? "grupo" : "individual",
+              cor: corValida(t.cor),
+              observacoes: String(t.observacoes || ""),
+              status: STATUS_LABEL[t.status] ? t.status : "nao-comecei",
+              prontoAutomatico: !!t.prontoAutomatico,
+              tarefas: Array.isArray(t.tarefas) ? t.tarefas : []
+            };
+          });
+        }
+      }
+    } catch (e) { /* sem armazenamento ou dado corrompido: nada a importar */ }
+    return [];
+  }
+
+  // A conta antiga guardava a senha em texto puro neste navegador: some junto com a decisão.
+  function apagarContaAntiga(perfil) {
+    try {
+      var bruto = localStorage.getItem(CHAVE_USUARIOS_ANTIGA);
+      if (!bruto) return;
+      var contas = JSON.parse(bruto);
+      if (!contas || typeof contas !== "object") return;
+      var alvos = [limparNome(perfil.usuario), limparNome(perfil.nome)];
+      Object.keys(contas).forEach(function (nome) {
+        if (alvos.indexOf(limparNome(nome)) !== -1) delete contas[nome];
+      });
+      localStorage.setItem(CHAVE_USUARIOS_ANTIGA, JSON.stringify(contas));
+    } catch (e) { /* ignora */ }
+  }
+
+  function oferecerImportacao() {
+    var perfil = usuarioAtual;
+    if (!perfil || perfil.importou_local) return;
+    var lista = lerTrabalhosLocais(perfil);
+    if (lista.length === 0) return;
+
+    dialogImportarTexto.textContent =
+      "Encontramos " + lista.length + (lista.length === 1 ? " trabalho salvo" : " trabalhos salvos") +
+      " neste navegador, da época em que o Combinado não tinha login de verdade. " +
+      "Quer trazer para a sua conta? Nomes de integrantes digitados à mão não vêm junto: " +
+      "para trabalhar em grupo, use o código do grupo.";
+
+    function encerrar() {
+      perfil.importou_local = true;
+      apagarContaAntiga(perfil);
+      btnImportarSim.disabled = false;
+      btnImportarNao.disabled = false;
+      dialogImportar.close();
+    }
+
+    btnImportarNao.onclick = function () {
+      btnImportarSim.disabled = true;
+      btnImportarNao.disabled = true;
+      Dados.marcarImportado(perfil.id).catch(function () { /* tenta de novo na próxima entrada */ }).then(encerrar);
+    };
+
+    btnImportarSim.onclick = function () {
+      btnImportarSim.disabled = true;
+      btnImportarNao.disabled = true;
+      pendentes += 1;
+      atualizarOcupado();
+      Dados.importar(lista, perfil.id, perfil.nome || perfil.usuario).then(function (n) {
+        return Dados.marcarImportado(perfil.id).then(function () { return n; });
+      }).then(function (n) {
+        mostrarAviso(n + (n === 1 ? " trabalho importado." : " trabalhos importados."), false);
+        encerrar();
+      }).catch(function (e) {
+        mostrarAviso(MENSAGENS_ESCRITA[e && e.codigo] || "Não foi possível importar agora. Tente de novo ao entrar.", false);
+        btnImportarSim.disabled = false;
+        btnImportarNao.disabled = false;
+        dialogImportar.close();
+      }).then(function () {
+        pendentes = Math.max(0, pendentes - 1);
+        if (pendentes === 0 && usuarioAtual) agendarRecarga(0);
+        atualizarOcupado();
+      });
+    };
+
+    dialogImportar.showModal();
+  }
+
   /* ---------------- inicialização ---------------- */
 
-  var sessaoSalva = carregarSessao();
-  if (sessaoSalva && carregarUsuarios()[sessaoSalva]) {
-    entrarComoUsuario(sessaoSalva);
+  atualizarOcupado();
+  telaAuth.hidden = true;
+  appPrincipal.hidden = true;
+
+  if (!Dados.iniciar()) {
+    mostrarTelaAuth();
+    authConfigErro.hidden = false;
   } else {
-    telaAuth.hidden = false;
-    appPrincipal.hidden = true;
-    inputUsuarioAuth.focus();
+    Dados.aoMudarSessao(function (evento) {
+      if (evento === "SIGNED_OUT" && usuarioAtual && !saindo) {
+        voltarParaLogin("Sua sessão terminou. Entre de novo.");
+      }
+    });
+    Dados.sessaoAtual().then(function (perfil) {
+      if (perfil) return entrarComoPerfil(perfil);
+      mostrarTelaAuth();
+    }).catch(function () {
+      mostrarTelaAuth();
+    });
   }
 })();

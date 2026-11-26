@@ -10,29 +10,45 @@ Trabalhos de várias matérias, individuais e em grupo, acontecem ao mesmo tempo
 
 ## O que já tem
 
-O app já permite criar uma conta e fazer login, com cada usuário vendo só os próprios trabalhos. Dá para cadastrar um trabalho com título, matéria, prazo e tipo (individual ou em grupo), editar depois de criado, escrever observações livres sobre o trabalho, escolher uma cor para o card, acompanhar o status (não comecei, fazendo, pronto, entregue) e excluir com confirmação. Nos trabalhos em grupo também dá para cadastrar os integrantes do grupo e dividir as tarefas entre eles, escolhendo o responsável de cada uma numa lista e acompanhando quantas já foram concluídas. Quando todas as tarefas de um trabalho em grupo são concluídas, ele passa sozinho para o status "Pronto".
+O app tem login de verdade: cada pessoa cria uma conta com usuário e senha e entra de qualquer aparelho, vendo só os trabalhos dela. Dá para cadastrar um trabalho com título, matéria, prazo e tipo (individual ou em grupo), editar depois de criado, escrever observações livres sobre o trabalho, escolher uma cor para o card, acompanhar o status (não comecei, fazendo, pronto, entregue) e excluir com confirmação.
+
+Nos trabalhos em grupo, quem cria o trabalho é o dono e recebe um código de 6 caracteres. Os colegas criam a própria conta, tocam em "Entrar com código" e passam a ver e editar o mesmo trabalho. Os integrantes são as contas que entraram, o responsável de cada tarefa é escolhido entre elas, e tudo se atualiza ao vivo na tela de todo mundo. O dono pode remover integrantes, trocar o código e excluir o trabalho; os integrantes podem sair do trabalho. Quando todas as tarefas de um trabalho em grupo são concluídas, ele passa sozinho para o status "Pronto".
 
 A lista de trabalhos fica sempre ordenada pelo prazo mais próximo e pode ser filtrada por status, por abas com a contagem de cada um, e por matéria. Trabalhos perto do prazo (ou já atrasados) ganham um aviso destacado no card, enquanto não forem marcados como entregues. No topo da lista também aparece quantos trabalhos já foram entregues do total, com uma barra de progresso.
 
 ## Melhorias a partir do teste com usuários
 
-Em novembro de 2026 o app foi testado com 3 estudantes (notebook, Android e iPhone). Os problemas mais citados viraram mudanças: trabalhos em grupo sem tarefas mostram uma dica de próximo passo e o botão Tarefas fica em destaque; o filtro por matéria ganhou ícone e o rótulo "Filtrar por matéria"; o formulário passou a dizer "Nome do trabalho" e "Matéria (disciplina)", e os botões Cancelar e Salvar ficam sempre visíveis, mesmo em tela de celular baixa. Num reteste, outra pessoa tentou escolher o responsável de uma tarefa antes de cadastrar os integrantes; agora a tela de Tarefas avisa a ordem e tem um botão que leva direto ao campo dos integrantes.
+Em novembro de 2026 o app foi testado com 3 estudantes (notebook, Android e iPhone). Os problemas mais citados viraram mudanças: trabalhos em grupo sem tarefas mostram uma dica de próximo passo e o botão Tarefas fica em destaque; o filtro por matéria ganhou ícone e o rótulo "Filtrar por matéria"; o formulário passou a dizer "Nome do trabalho" e "Matéria (disciplina)", e os botões Cancelar e Salvar ficam sempre visíveis, mesmo em tela de celular baixa. Num reteste, outra pessoa tentou escolher o responsável de uma tarefa antes de cadastrar os integrantes. Isso foi resolvido de vez com o login de verdade: não há mais cadastro de integrantes à mão, e o campo Responsável só oferece quem já entrou no grupo pelo código.
 
 ## Visual
 
 O visual segue a direção "Quadro": fundo lilás, contornos grossos em azul-escuro, sombras sólidas e cards coloridos. Os títulos usam a fonte Bricolage Grotesque e o texto usa Instrument Sans, ambas open source (licença SIL OFL) e hospedadas na pasta `fonts/` do próprio projeto, sem depender de serviço externo. Há também um tema escuro: na primeira visita o app segue a preferência do aparelho, e o botão com lua/sol no cabeçalho alterna entre claro e escuro, lembrando a escolha no navegador.
 
-## O que vem por aí
-
-Está planejado sincronizar os trabalhos entre aparelhos diferentes.
-
 ## Tecnologia
 
-O Combinado é feito em HTML, CSS e JavaScript puro, sem framework. Os dados ficam salvos no navegador, via localStorage. Por enquanto o login também é só local, sem sincronizar entre aparelhos.
+O Combinado é feito em HTML, CSS e JavaScript puro, sem framework, e continua publicado no GitHub Pages. Contas, trabalhos e grupos ficam no Supabase (login, banco Postgres e atualização em tempo real), que o navegador acessa direto. A decisão e as alternativas estão no ADR-001 (login real e grupos com convite).
+
+Como o site é só arquivos estáticos, a segurança está no banco: todas as tabelas têm regras de acesso por linha (RLS), então só quem é integrante de um trabalho enxerga o trabalho e as tarefas dele. No navegador fica apenas a chave pública (`publishable`) do Supabase, em `js/config.js`; a chave secreta nunca entra no repositório.
+
+O usuário vira um e-mail de mentira (`usuario@combinado.app`) só para o Supabase aceitar o cadastro, com confirmação de e-mail desligada. Por isso não existe recuperação de senha.
+
+Arquivos principais: `js/dados.js` (única parte que fala com o Supabase), `js/app.js` (telas e regras), `js/vendor/supabase.js` (biblioteca oficial, copiada para o projeto) e `supabase/schema.sql` (tabelas, regras de acesso e funções do banco).
+
+## Montando o banco (uma vez)
+
+1. Crie um projeto em supabase.com e, em Authentication > Sign In / Providers > Email, desligue "Confirm email".
+2. Em SQL Editor, cole e rode o conteúdo de `supabase/schema.sql`. Pode rodar de novo sem problema.
+3. Em `js/config.js`, coloque a URL do projeto e a chave `publishable`.
+
+As regras de acesso foram testadas num Postgres local com três contas (`supabase/testes/`): quem está de fora não lê nada, só o dono exclui o trabalho ou troca o código, e o código antigo para de funcionar depois da troca.
+
+## Trabalhos antigos
+
+Quem usou a versão anterior (dados só no navegador) vê, ao entrar na conta com o mesmo nome de usuário, uma pergunta para importar os trabalhos salvos naquele navegador. Nomes de integrantes digitados à mão não são importados; no lugar deles vale o código do grupo.
 
 ## Rodando localmente
 
-Não precisa de instalação. Basta abrir o arquivo `index.html` num navegador, ou servir a pasta com qualquer servidor estático, por exemplo:
+Precisa de internet (o login e os dados ficam no Supabase). Não precisa de instalação: sirva a pasta com qualquer servidor estático, por exemplo:
 
 ```
 python3 -m http.server 8000

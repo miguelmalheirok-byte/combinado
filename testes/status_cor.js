@@ -1,8 +1,9 @@
 const { chromium } = require('playwright');
+const { paginaComFake, novoContexto, calmo, cadastrar, entrar, novoTrabalho } = require('./_base');
 
 (async () => {
   const browser = await chromium.launch();
-  const page = await browser.newPage();
+  const page = await paginaComFake(browser);
   const erros = [];
   page.on('console', (msg) => { if (msg.type() === 'error') erros.push(msg.text()); });
   page.on('pageerror', (err) => erros.push('pageerror: ' + err.message));
@@ -20,6 +21,7 @@ const { chromium } = require('playwright');
   await page.fill('#input-senha-auth', '123456');
   await page.click('#btn-auth-principal');
   await page.waitForSelector('#app-principal:not([hidden])');
+  await calmo(page);
 
   console.log('=== LOGO ===');
   const logoCab = await page.locator('.cabecalho-logo').evaluate((img) => img.complete && img.naturalWidth > 0);
@@ -85,6 +87,7 @@ const { chromium } = require('playwright');
   await aba('');
   check('limpar filtros volta aos 4 trabalhos', (await titulos()).length === 4);
 
+  await calmo(page);
   console.log('=== COR DO CARD ===');
   check('card T1 azul', (await card('T1').getAttribute('data-cor')) === 'azul');
   check('card T2 sem cor não tem data-cor', (await card('T2').getAttribute('data-cor')) === null);
@@ -137,18 +140,10 @@ const { chromium } = require('playwright');
   console.log('=== PERSISTÊNCIA E DADOS ANTIGOS ===');
   await page.reload();
   await page.waitForSelector('#app-principal:not([hidden])');
+  await calmo(page);
   check('após recarregar, cor e status continuam', (await card('T1').getAttribute('data-cor')) === 'azul' && (await card('T2').getAttribute('data-status')) === 'pronto');
 
-  // trabalho antigo, sem campo "cor", continua abrindo normalmente
-  await page.evaluate(() => {
-    const k = 'trabalhos:v1:teste-status-cor';
-    const s = JSON.parse(localStorage.getItem(k));
-    s.trabalhos.forEach((x) => { delete x.cor; });
-    localStorage.setItem(k, JSON.stringify(s));
-  });
-  await page.reload();
-  await page.waitForSelector('#app-principal:not([hidden])');
-  check('trabalhos antigos sem cor aparecem sem erro', (await page.locator('.trabalho-card').count()) === 4 && (await card('T1').getAttribute('data-cor')) === null);
+  check('trabalho sem cor (campo vazio no banco) aparece sem erro', (await page.locator('.trabalho-card').count()) === 4 && (await card('T2').getAttribute('data-cor')) === null);
 
   console.log('--- total de checagens: ' + checks + ' ---');
   console.log('--- erros de console: ' + erros.length + ' ---');

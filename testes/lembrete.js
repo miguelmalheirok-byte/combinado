@@ -1,4 +1,5 @@
 const { chromium } = require('playwright');
+const { paginaComFake, novoContexto, calmo, cadastrar, entrar, novoTrabalho } = require('./_base');
 
 function isoComOffset(diasOffset) {
   var d = new Date();
@@ -11,7 +12,7 @@ function isoComOffset(diasOffset) {
 
 (async () => {
   const browser = await chromium.launch();
-  const page = await browser.newPage();
+  const page = await paginaComFake(browser);
   const erros = [];
   page.on('console', (msg) => { if (msg.type() === 'error') erros.push(msg.text()); });
   page.on('pageerror', (err) => erros.push('pageerror: ' + err.message));
@@ -30,6 +31,7 @@ function isoComOffset(diasOffset) {
   await page.fill('#input-senha-auth', '123456');
   await page.click('#btn-auth-principal');
   await page.waitForSelector('#app-principal:not([hidden])');
+  await calmo(page);
 
   async function criarTrabalho(titulo, prazoOffset) {
     await page.click('#btn-novo-trabalho');
@@ -70,6 +72,7 @@ function isoComOffset(diasOffset) {
   // reload: badges recalculados, nao gravados como string fixa
   await page.reload();
   await page.waitForSelector('#app-principal:not([hidden])');
+  await calmo(page);
   check('apos reload, badge "Atrasado" continua correto', (await badgeDoCard('Trabalho Atrasado').textContent()) === 'Atrasado');
   check('apos reload, badge "Vence hoje" continua correto', (await badgeDoCard('Trabalho Hoje').textContent()) === 'Vence hoje');
 

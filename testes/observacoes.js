@@ -1,8 +1,9 @@
 const { chromium } = require('playwright');
+const { paginaComFake, novoContexto, calmo, cadastrar, entrar, novoTrabalho } = require('./_base');
 
 (async () => {
   const browser = await chromium.launch();
-  const page = await browser.newPage();
+  const page = await paginaComFake(browser);
   const erros = [];
   page.on('console', (msg) => { if (msg.type() === 'error') erros.push(msg.text()); });
   page.on('pageerror', (err) => erros.push('pageerror: ' + err.message));
@@ -20,6 +21,7 @@ const { chromium } = require('playwright');
   await page.fill('#input-senha-auth', '123456');
   await page.click('#btn-auth-principal');
   await page.waitForSelector('#app-principal:not([hidden])');
+  await calmo(page);
 
   const card = (t) => page.locator('#lista-trabalhos li.trabalho-card').filter({ hasText: t });
   const fechado = () => page.waitForFunction(() => !document.getElementById('dialog-trabalho').open);
@@ -87,16 +89,9 @@ const { chromium } = require('playwright');
   // persiste e dados antigos
   await page.reload();
   await page.waitForSelector('#app-principal:not([hidden])');
+  await calmo(page);
   check('após recarregar, observação continua', (await card('Sem nota').locator('.trabalho-observacoes').textContent()).includes('Persistir'));
-  await page.evaluate(() => {
-    const k = 'trabalhos:v1:teste-observacoes';
-    const s = JSON.parse(localStorage.getItem(k));
-    s.trabalhos.forEach((x) => { delete x.observacoes; });
-    localStorage.setItem(k, JSON.stringify(s));
-  });
-  await page.reload();
-  await page.waitForSelector('#app-principal:not([hidden])');
-  check('trabalhos antigos sem observação abrem sem erro', (await page.locator('.trabalho-card').count()) === 2);
+  check('trabalho sem observação (campo vazio no banco) abre sem erro', (await page.locator('.trabalho-card').count()) === 2);
 
   console.log('--- total de checagens: ' + checks + ' ---');
   console.log('--- erros de console: ' + erros.length + ' ---');

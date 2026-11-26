@@ -1,7 +1,8 @@
 const { chromium } = require('playwright');
+const { paginaComFake, novoContexto, calmo, cadastrar, entrar, novoTrabalho } = require('./_base');
 (async () => {
   const browser = await chromium.launch();
-  const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
+  const page = await paginaComFake(browser, { viewport: { width: 390, height: 844 } });
   const erros = [];
   const avisos = [];
   page.on('console', msg => {
