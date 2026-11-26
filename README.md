@@ -8,6 +8,13 @@ Acesse em: https://miguelmalheirok-byte.github.io/combinado/
 
 Trabalhos de várias matérias, individuais e em grupo, acontecem ao mesmo tempo, e hoje são controlados de cabeça ou pelo WhatsApp. Isso causa prazo perdido e tarefa sem dono, principalmente quando o trabalho é dividido entre colegas.
 
+## Equipe
+
+Projeto da disciplina de Usabilidade, Desenvolvimento Web, Mobile e Jogos (UniSul), feito por:
+
+- Miguel Kirchhof (GitHub: [miguelmalheirok-byte](https://github.com/miguelmalheirok-byte)), responsável pela submissão
+- Samuel Lemos
+
 ## O que já tem
 
 O app tem login de verdade: cada pessoa cria uma conta com usuário e senha e entra de qualquer aparelho, vendo só os trabalhos dela. Dá para cadastrar um trabalho com título, matéria, prazo e tipo (individual ou em grupo), editar depois de criado, escrever observações livres sobre o trabalho, escolher uma cor para o card, acompanhar o status (não comecei, fazendo, pronto, entregue) e excluir com confirmação.
@@ -61,3 +68,13 @@ python3 -m http.server 8000
 ```
 
 e acessar `http://localhost:8000`.
+
+## Créditos
+
+O código do Combinado (HTML, CSS e JavaScript) foi escrito pela equipe, e o logo (`img/logo.png`) foi criado por Miguel Kirchhof. O que veio de terceiros, com a licença de cada um:
+
+- **supabase-js** (versão 2.119.2), biblioteca oficial do Supabase para falar com o login e o banco, licença MIT, © 2020 Supabase. Está copiada em `js/vendor/supabase.js`, com a licença em `js/vendor/supabase.LICENSE`.
+- **Supabase** (https://supabase.com), serviço usado para login, banco de dados (Postgres) e atualização em tempo real.
+- **Bricolage Grotesque**, fonte dos títulos, © The Bricolage Grotesque Project Authors, licença SIL Open Font License 1.1 (https://github.com/ateliertriay/bricolage). Os arquivos estão em `fonts/`, com a licença em `fonts/LICENSE-Bricolage-Grotesque.txt`.
+- **Instrument Sans**, fonte do texto, © The Instrument Sans Project Authors, licença SIL Open Font License 1.1 (https://github.com/Instrument/instrument-sans). Os arquivos estão em `fonts/`, com a licença em `fonts/LICENSE-Instrument-Sans.txt`.
+- **Playwright** (https://playwright.dev), usado só para rodar os testes automatizados da pasta `testes/`, não faz parte do site.
