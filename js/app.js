@@ -149,6 +149,8 @@
     pendentes = 0;
     recarregarDepois = false;
     Dados.pararDeOuvir();
+    rascunhoNovoTrabalho = false;
+    formTrabalho.reset();
     state.trabalhos = [];
     [dialogTrabalho, dialogTarefas, dialogConfirmar, dialogCodigo, dialogImportar].forEach(function (d) {
       if (d.open) d.close();
@@ -414,6 +416,11 @@
   var filtroMateriaAtual = "";
   var filtroStatusAtual = "";
 
+  // "Redes" e "redes " são a mesma matéria.
+  function chaveMateria(texto) {
+    return String(texto || "").trim().toLowerCase();
+  }
+
   selectFiltroMateria.addEventListener("change", function () {
     filtroMateriaAtual = selectFiltroMateria.value;
     renderTrabalhos();
@@ -429,7 +436,7 @@
   function atualizarAbasStatus() {
     var contagens = { "": 0 };
     state.trabalhos.forEach(function (t) {
-      if (filtroMateriaAtual && t.materia !== filtroMateriaAtual) return;
+      if (filtroMateriaAtual && chaveMateria(t.materia) !== chaveMateria(filtroMateriaAtual)) return;
       contagens[""] += 1;
       contagens[t.status] = (contagens[t.status] || 0) + 1;
     });
@@ -523,10 +530,36 @@
     setTimeout(atualizarPrevia, 0);
   });
 
+  // Campo preenchido só com espaços passa pelo "required": avisa em vez de não fazer nada.
+  function avisarCampoVazio(campo, mensagem) {
+    campo.setCustomValidity(mensagem);
+    campo.reportValidity();
+    campo.focus();
+  }
+
+  function limparAvisoDoCampo(campo) {
+    campo.addEventListener("input", function () { campo.setCustomValidity(""); });
+  }
+
+  limparAvisoDoCampo(inputTitulo);
+  limparAvisoDoCampo(inputMateria);
+
+  // Esc (ou Cancelar) num trabalho novo não apaga o que foi digitado: ao reabrir, o rascunho continua.
+  var modoDialogTrabalho = "novo";
+  var rascunhoNovoTrabalho = false;
+  var trabalhoEnviado = false;
+
+  dialogTrabalho.addEventListener("close", function () {
+    if (usuarioAtual && modoDialogTrabalho === "novo" && !trabalhoEnviado) rascunhoNovoTrabalho = true;
+  });
+
   function abrirDialogNovoTrabalho() {
     trabalhoEmEdicaoId = null;
+    modoDialogTrabalho = "novo";
+    trabalhoEnviado = false;
     dialogTrabalhoTitulo.textContent = "Novo trabalho";
-    formTrabalho.reset();
+    if (!rascunhoNovoTrabalho) formTrabalho.reset();
+    rascunhoNovoTrabalho = false;
     atualizarPrevia();
     dialogTrabalho.showModal();
     inputTitulo.focus();
@@ -534,6 +567,8 @@
 
   function abrirDialogEditarTrabalho(trabalho) {
     trabalhoEmEdicaoId = trabalho.id;
+    modoDialogTrabalho = "editar";
+    trabalhoEnviado = false;
     dialogTrabalhoTitulo.textContent = "Editar trabalho";
     inputTitulo.value = trabalho.titulo;
     inputMateria.value = trabalho.materia;
@@ -565,7 +600,11 @@
     evento.preventDefault();
     var titulo = inputTitulo.value.trim();
     var materia = inputMateria.value.trim();
-    if (!titulo || !materia || !usuarioAtual) return;
+    if (!usuarioAtual) return;
+    if (!titulo) { avisarCampoVazio(inputTitulo, "Escreva o nome do trabalho."); return; }
+    if (!materia) { avisarCampoVazio(inputMateria, "Escreva a matéria."); return; }
+    materia = materiaComGrafiaExistente(materia);
+    trabalhoEnviado = true;
 
     var tipoSelecionado = formTrabalho.querySelector('input[name="tipo-trabalho"]:checked');
     var corSelecionada = formTrabalho.querySelector('input[name="cor-trabalho"]:checked');
@@ -601,6 +640,12 @@
       };
       Object.keys(campos).forEach(function (k) { novo[k] = campos[k]; });
       state.trabalhos.push(novo);
+      // O trabalho novo precisa aparecer: tira filtros que o esconderiam.
+      if (filtroStatusAtual && filtroStatusAtual !== "nao-comecei") filtroStatusAtual = "";
+      if (filtroMateriaAtual && chaveMateria(filtroMateriaAtual) !== chaveMateria(novo.materia)) {
+        filtroMateriaAtual = "";
+        selectFiltroMateria.value = "";
+      }
       escrever(function () { return Dados.criarTrabalho(novo, usuarioAtual.id); });
     }
 
@@ -659,9 +704,10 @@
     var vistas = {};
     var materias = [];
     state.trabalhos.forEach(function (t) {
-      if (t.materia && !vistas[t.materia]) {
-        vistas[t.materia] = true;
-        materias.push(t.materia);
+      var chave = chaveMateria(t.materia);
+      if (chave && !vistas[chave]) {
+        vistas[chave] = true;
+        materias.push(t.materia.trim());
       }
     });
     materias.sort(function (a, b) { return a.localeCompare(b, "pt-BR"); });
@@ -685,12 +731,34 @@
       selectFiltroMateria.appendChild(opcao);
     });
 
-    if (materias.indexOf(valorAtual) !== -1) {
-      selectFiltroMateria.value = valorAtual;
+    var listaSugestoes = document.getElementById("lista-materias");
+    if (listaSugestoes) {
+      listaSugestoes.innerHTML = "";
+      materias.forEach(function (materia) {
+        var sugestao = document.createElement("option");
+        sugestao.value = materia;
+        listaSugestoes.appendChild(sugestao);
+      });
+    }
+
+    var existente = "";
+    materias.forEach(function (m) { if (chaveMateria(m) === chaveMateria(valorAtual)) existente = m; });
+    if (existente) {
+      selectFiltroMateria.value = existente;
+      filtroMateriaAtual = existente;
     } else {
       selectFiltroMateria.value = "";
       filtroMateriaAtual = "";
     }
+  }
+
+  // Se já existe a matéria (com outras maiúsculas), usa a grafia que já existe.
+  function materiaComGrafiaExistente(texto) {
+    var chave = chaveMateria(texto);
+    for (var i = 0; i < state.trabalhos.length; i++) {
+      if (chaveMateria(state.trabalhos[i].materia) === chave) return state.trabalhos[i].materia.trim();
+    }
+    return texto;
   }
 
   function compararPorPrazo(a, b) {
@@ -702,7 +770,7 @@
 
   function ordenarEFiltrar(lista) {
     var filtrados = lista.filter(function (t) {
-      return (!filtroMateriaAtual || t.materia === filtroMateriaAtual) &&
+      return (!filtroMateriaAtual || chaveMateria(t.materia) === chaveMateria(filtroMateriaAtual)) &&
              (!filtroStatusAtual || t.status === filtroStatusAtual);
     });
 
@@ -803,6 +871,26 @@
       meta.textContent = textoMeta;
       item.appendChild(meta);
 
+      if (trabalho.tipo === "grupo" && trabalho.codigo && !salvando) {
+        var linhaCodigo = document.createElement("p");
+        linhaCodigo.className = "trabalho-codigo";
+        linhaCodigo.appendChild(document.createTextNode("Código do grupo "));
+        var valorCodigo = document.createElement("strong");
+        valorCodigo.className = "trabalho-codigo-valor";
+        valorCodigo.textContent = trabalho.codigo;
+        linhaCodigo.appendChild(valorCodigo);
+        var botaoCopiarCard = document.createElement("button");
+        botaoCopiarCard.type = "button";
+        botaoCopiarCard.className = "botao botao-texto botao-copiar-card";
+        botaoCopiarCard.textContent = "Copiar";
+        botaoCopiarCard.setAttribute("aria-label", "Copiar o código do grupo de " + trabalho.titulo);
+        botaoCopiarCard.addEventListener("click", function () {
+          copiarCodigo(trabalho.codigo, botaoCopiarCard, valorCodigo);
+        });
+        linhaCodigo.appendChild(botaoCopiarCard);
+        item.appendChild(linhaCodigo);
+      }
+
       if (trabalho.observacoes) {
         var obs = document.createElement("p");
         obs.className = "trabalho-observacoes";
@@ -875,7 +963,7 @@
       botaoExcluir.type = "button";
       botaoExcluir.className = "botao botao-texto";
       var dono = souDono(trabalho);
-      botaoExcluir.textContent = dono ? "Excluir" : "Sair";
+      botaoExcluir.textContent = dono ? "Excluir" : "Sair do grupo";
       botaoExcluir.disabled = salvando;
       botaoExcluir.addEventListener("click", function () {
         if (dono) pedirConfirmacaoExclusao(trabalho);
@@ -923,6 +1011,7 @@
   var dialogTarefasTitulo = document.getElementById("dialog-tarefas-titulo");
   var formTarefa = document.getElementById("form-tarefa");
   var inputTarefaTexto = document.getElementById("input-tarefa-texto");
+  limparAvisoDoCampo(inputTarefaTexto);
   var inputTarefaResponsavel = document.getElementById("input-tarefa-responsavel");
   var listaTarefas = document.getElementById("lista-tarefas");
   var tarefasVazio = document.getElementById("tarefas-vazio");
@@ -1063,19 +1152,18 @@
     renderSelectResponsavel();
   }
 
-  var timerCopiado = null;
-  btnCopiarCodigo.addEventListener("click", function () {
-    if (!trabalhoTarefasAtual || !trabalhoTarefasAtual.codigo) return;
-    var codigo = trabalhoTarefasAtual.codigo;
+  // Copia o código do grupo (usado na janela de Tarefas e no card). Se o navegador não deixar
+  // copiar, seleciona o texto na tela para a pessoa copiar à mão.
+  function copiarCodigo(codigo, botao, elementoDoCodigo) {
     function marcar(texto) {
-      btnCopiarCodigo.textContent = texto;
-      clearTimeout(timerCopiado);
-      timerCopiado = setTimeout(function () { btnCopiarCodigo.textContent = "Copiar"; }, 1800);
+      botao.textContent = texto;
+      clearTimeout(botao.timerCopiado);
+      botao.timerCopiado = setTimeout(function () { botao.textContent = "Copiar"; }, 1800);
     }
     function selecionarNaTela() {
       try {
         var faixa = document.createRange();
-        faixa.selectNodeContents(codigoGrupoValor);
+        faixa.selectNodeContents(elementoDoCodigo);
         var sel = window.getSelection();
         sel.removeAllRanges();
         sel.addRange(faixa);
@@ -1087,6 +1175,11 @@
     } else {
       selecionarNaTela();
     }
+  }
+
+  btnCopiarCodigo.addEventListener("click", function () {
+    if (!trabalhoTarefasAtual || !trabalhoTarefasAtual.codigo) return;
+    copiarCodigo(trabalhoTarefasAtual.codigo, btnCopiarCodigo, codigoGrupoValor);
   });
 
   btnTrocarCodigo.addEventListener("click", function () {
@@ -1143,7 +1236,7 @@
     inputTexto.maxLength = 300;
     inputTexto.required = true;
     inputTexto.value = rascunhoTexto;
-    inputTexto.addEventListener("input", function () { rascunhoTexto = inputTexto.value; });
+    inputTexto.addEventListener("input", function () { rascunhoTexto = inputTexto.value; inputTexto.setCustomValidity(""); });
     campoTexto.appendChild(rotuloTexto);
     campoTexto.appendChild(inputTexto);
     form.appendChild(campoTexto);
@@ -1200,7 +1293,7 @@
       evento.preventDefault();
       var texto = inputTexto.value.trim();
       if (!texto) {
-        inputTexto.focus();
+        avisarCampoVazio(inputTexto, "Escreva a tarefa.");
         return;
       }
       var responsavelId = selectResp.value;
@@ -1339,7 +1432,7 @@
     if (ehTemporario(trabalho)) return;
 
     var texto = inputTarefaTexto.value.trim();
-    if (!texto) return;
+    if (!texto) { avisarCampoVazio(inputTarefaTexto, "Escreva a tarefa."); return; }
     var responsavelId = inputTarefaResponsavel.value;
 
     var nova = { id: gerarIdTemporario(), texto: texto, responsavelId: responsavelId, feito: false };

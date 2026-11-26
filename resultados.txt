@@ -1,6 +1,35 @@
 Resultados dos testes automatizados do Combinado
-Data da execução: 26/11/2026 16:03 (UTC)
+Data da execução: 26/11/2026 17:12 (UTC)
 Ferramenta: Playwright (Chromium headless), app servido localmente em http://localhost:8799, com o Supabase de mentira (testes/fake_supabase.js)
+
+================ testes/melhorias_8_a_15.js ================
+OK   - cabeçalho: "Sair da conta"
+OK   - nome do trabalho tem limite de 120 caracteres
+OK   - campo de nova tarefa tem limite de 300 caracteres
+OK   - título só com espaços: dialog continua aberto com mensagem
+OK   - ao digitar, a mensagem some
+OK   - matéria só com espaços: mensagem própria
+OK   - Esc no formulário novo mantém o que foi digitado
+OK   - depois de enviar, o formulário abre vazio de novo
+OK   - "Redes de Computadores " e "REDES…" viram uma matéria só no filtro
+OK   - os cards usam a grafia que já existia
+OK   - o campo de matéria sugere as matérias já usadas
+OK   - legenda explica Pronto e Entregue
+OK   - filtro "Pronto" esconde os trabalhos
+OK   - criar trabalho com filtro de status ligado limpa o filtro e mostra o novo
+OK   - criar trabalho de outra matéria com filtro de matéria ligado limpa o filtro
+OK   - card em grupo mostra o código de 6 caracteres
+OK   - card individual não mostra código
+OK   - Copiar no card dá retorno ("Copiado" ou "Selecionado")
+OK   - o código copiado é o do grupo (quando o navegador permite ler a área de transferência)
+OK   - janela do grupo mostra o mesmo código do card
+OK   - quem não é dono vê "Sair do grupo" no card (e não "Sair" solto)
+OK   - quem não é dono também vê o código no card
+OK   - dono vê "Excluir"
+OK   - janela do grupo: botão "Sair do grupo"
+OK   - janela do grupo explica que reabrir volta para Fazendo
+OK   - o rascunho de uma conta não aparece na conta seguinte
+OK   - nenhum erro inesperado no console
 
 ================ testes/avisos_confirmacoes.js ================
 OK   - senha começa escondida

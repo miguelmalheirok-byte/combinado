@@ -1087,3 +1087,12 @@ dialog h2 {
   z-index: 5;
   box-shadow: 0 3px 0 rgba(30, 27, 75, 0.9);
 }
+
+
+/* Legenda Pronto / Entregue */
+.progresso-legenda { margin: 8px 0 0; font-size: 13px; line-height: 1.4; }
+
+/* Código do grupo no card */
+.trabalho-codigo { margin: 0; display: flex; align-items: center; flex-wrap: wrap; gap: 6px; font-size: 14px; }
+.trabalho-codigo-valor { letter-spacing: 0.12em; font-size: 15px; }
+.botao-copiar-card { min-height: 44px; padding: 0 8px; }
