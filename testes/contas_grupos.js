@@ -123,6 +123,49 @@ const { abrirNavegador, novoContexto, vigiar, calmo, cadastrar, entrar, novoTrab
   check('Bia criou a tarefa com ela de responsável', /Escrever a introdução/.test(await B.locator('#lista-tarefas').textContent()) && /bia/.test(await B.locator('.tarefa-responsavel').textContent()));
   check('Ana recebe a tarefa ao vivo, com a Bia de responsável', await ate(A, () => /Escrever a introdução/.test(document.querySelector('#lista-tarefas').textContent) && /bia/.test((document.querySelector('.tarefa-responsavel') || {}).textContent || '')));
 
+  /* ---------- 4b. editar tarefa ---------- */
+  const itemA = () => A.locator('#lista-tarefas li.tarefa-item').first();
+  await itemA().locator('button:has-text("Editar")').click();
+  check('Editar abre o campo da tarefa já preenchido e com o foco', (await A.inputValue('#input-editar-tarefa-texto')) === 'Escrever a introdução' && await A.evaluate(() => document.activeElement.id === 'input-editar-tarefa-texto'));
+  check('a edição oferece o responsável atual (Bia) selecionado', (await A.locator('#select-editar-tarefa-responsavel option:checked').textContent()) === 'bia');
+  await A.fill('#input-editar-tarefa-texto', 'Texto que vou cancelar');
+  await A.click('#lista-tarefas .tarefa-edicao-acoes button:has-text("Cancelar")');
+  check('Cancelar mantém a tarefa como estava', /Escrever a introdução/.test(await A.locator('#lista-tarefas').textContent()) && (await A.locator('#input-editar-tarefa-texto').count()) === 0);
+  await itemA().locator('button:has-text("Editar")').click();
+  await A.fill('#input-editar-tarefa-texto', 'Texto cancelado com Esc');
+  await A.keyboard.press('Escape');
+  check('Esc cancela só a edição e não fecha a janela de tarefas', await A.isVisible('#dialog-tarefas') && /Escrever a introdução/.test(await A.locator('#lista-tarefas').textContent()));
+  await itemA().locator('button:has-text("Editar")').click();
+  await A.fill('#input-editar-tarefa-texto', '   ');
+  await A.click('#lista-tarefas .tarefa-edicao-acoes button[type="submit"]');
+  check('texto vazio não salva e a edição continua aberta', (await A.locator('#input-editar-tarefa-texto').count()) === 1);
+  await A.fill('#input-editar-tarefa-texto', 'Escrever a introdução e a conclusão');
+  await A.selectOption('#select-editar-tarefa-responsavel', { label: 'Ana' });
+  await A.click('#lista-tarefas .tarefa-edicao-acoes button[type="submit"]');
+  await calmo(A);
+  check('salvar atualiza o texto e o responsável na tela da Ana', /introdução e a conclusão/.test(await A.locator('#lista-tarefas').textContent()) && (await A.locator('.tarefa-responsavel').textContent()) === 'Ana');
+  check('a Bia vê a edição ao vivo (texto e responsável)', await ate(B, () => /introdução e a conclusão/.test(document.querySelector('#lista-tarefas').textContent) && (document.querySelector('.tarefa-responsavel') || {}).textContent === 'Ana'));
+
+  // edição aberta não se perde quando chega uma atualização de outro integrante
+  await itemA().locator('button:has-text("Editar")').click();
+  await A.fill('#input-editar-tarefa-texto', 'Rascunho em andamento');
+  await B.fill('#input-tarefa-texto', 'Tarefa nova da Bia');
+  await B.click('#form-tarefa button[type="submit"]');
+  await calmo(B);
+  check('chegou a tarefa nova da Bia na lista da Ana', await ate(A, () => document.querySelectorAll('#lista-tarefas li').length === 2));
+  check('o rascunho da edição continua intacto e com o foco', (await A.inputValue('#input-editar-tarefa-texto')) === 'Rascunho em andamento' && await A.evaluate(() => document.activeElement.id === 'input-editar-tarefa-texto'));
+  await A.keyboard.press('Escape');
+  await A.locator('#lista-tarefas li.tarefa-item').nth(1).locator('button:has-text("Excluir")').click();
+  await calmo(A);
+  check('Ana apaga a tarefa extra; sobra só a primeira', (await A.locator('#lista-tarefas li').count()) === 1);
+
+  // devolve a tarefa para a Bia (os passos seguintes contam com isso)
+  await itemA().locator('button:has-text("Editar")').click();
+  await A.selectOption('#select-editar-tarefa-responsavel', { label: 'bia' });
+  await A.click('#lista-tarefas .tarefa-edicao-acoes button[type="submit"]');
+  await calmo(A);
+  check('responsável devolvido para a Bia', (await A.locator('.tarefa-responsavel').textContent()) === 'bia');
+
   await A.locator('#lista-tarefas input[type="checkbox"]').first().check();
   await calmo(A);
   check('Ana concluiu: anel mostra 1/1', (await A.locator('#tarefas-anel-numero').textContent()) === '1/1');

@@ -1049,3 +1049,10 @@ dialog h2 {
   .conteudo-cabecalho-acoes { flex-direction: row; }
   .conteudo-cabecalho-acoes .botao { width: auto; flex: 1; }
 }
+
+/* ---------- Editar tarefa ---------- */
+.tarefa-editar { flex: none; font-size: 13px; padding: 8px 4px; }
+.tarefa-item.tarefa-editando { display: block; }
+.tarefa-edicao .campo { margin-bottom: 10px; }
+.tarefa-edicao-acoes { display: flex; justify-content: flex-end; align-items: center; gap: 10px; }
+.tarefa-edicao-acoes .botao-primario { min-height: 46px; font-size: 16px; }

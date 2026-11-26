@@ -929,6 +929,7 @@
 
   function abrirDialogTarefas(trabalho) {
     trabalhoTarefasAtual = trabalho;
+    tarefaEmEdicaoId = null;
     dialogTarefasTitulo.textContent = trabalho.titulo;
     formTarefa.reset();
     renderIntegrantes();
@@ -1064,15 +1065,133 @@
     if (trabalhoTarefasAtual) pedirConfirmacaoSaida(trabalhoTarefasAtual);
   });
 
+  // Edição de uma tarefa na própria lista. O rascunho fica guardado aqui para não se perder
+  // quando a lista é redesenhada por uma atualização vinda de outro integrante.
+  var tarefaEmEdicaoId = null;
+  var rascunhoTexto = "";
+  var rascunhoResponsavel = "";
+  var ID_EDITAR_TEXTO = "input-editar-tarefa-texto";
+  var focoPendenteEdicao = false;
+
+  function cancelarEdicaoTarefa() {
+    tarefaEmEdicaoId = null;
+    renderTarefas();
+    inputTarefaTexto.focus();
+  }
+
+  function montarEdicaoTarefa(trabalho, tarefa) {
+    var item = document.createElement("li");
+    item.className = "tarefa-item tarefa-editando";
+
+    var form = document.createElement("form");
+    form.className = "tarefa-edicao";
+
+    var campoTexto = document.createElement("div");
+    campoTexto.className = "campo";
+    var rotuloTexto = document.createElement("label");
+    rotuloTexto.setAttribute("for", ID_EDITAR_TEXTO);
+    rotuloTexto.textContent = "Editar tarefa";
+    var inputTexto = document.createElement("input");
+    inputTexto.type = "text";
+    inputTexto.id = ID_EDITAR_TEXTO;
+    inputTexto.maxLength = 300;
+    inputTexto.required = true;
+    inputTexto.value = rascunhoTexto;
+    inputTexto.addEventListener("input", function () { rascunhoTexto = inputTexto.value; });
+    campoTexto.appendChild(rotuloTexto);
+    campoTexto.appendChild(inputTexto);
+    form.appendChild(campoTexto);
+
+    var campoResp = document.createElement("div");
+    campoResp.className = "campo";
+    var rotuloResp = document.createElement("label");
+    rotuloResp.setAttribute("for", "select-editar-tarefa-responsavel");
+    rotuloResp.textContent = "Responsável";
+    var selectResp = document.createElement("select");
+    selectResp.id = "select-editar-tarefa-responsavel";
+    var vazia = document.createElement("option");
+    vazia.value = "";
+    vazia.textContent = "Sem responsável";
+    selectResp.appendChild(vazia);
+    (trabalho.membros || []).forEach(function (m) {
+      var opcao = document.createElement("option");
+      opcao.value = m.id;
+      opcao.textContent = m.nome;
+      selectResp.appendChild(opcao);
+    });
+    var rascunhoValido = (trabalho.membros || []).some(function (m) { return m.id === rascunhoResponsavel; });
+    selectResp.value = rascunhoValido ? rascunhoResponsavel : "";
+    selectResp.addEventListener("change", function () { rascunhoResponsavel = selectResp.value; });
+    campoResp.appendChild(rotuloResp);
+    campoResp.appendChild(selectResp);
+    form.appendChild(campoResp);
+
+    var acoes = document.createElement("div");
+    acoes.className = "tarefa-edicao-acoes";
+    var cancelar = document.createElement("button");
+    cancelar.type = "button";
+    cancelar.className = "botao botao-texto";
+    cancelar.textContent = "Cancelar";
+    cancelar.addEventListener("click", cancelarEdicaoTarefa);
+    var salvar = document.createElement("button");
+    salvar.type = "submit";
+    salvar.className = "botao botao-primario";
+    salvar.textContent = "Salvar tarefa";
+    acoes.appendChild(cancelar);
+    acoes.appendChild(salvar);
+    form.appendChild(acoes);
+
+    // Esc cancela só a edição (sem fechar a janela de tarefas inteira).
+    form.addEventListener("keydown", function (evento) {
+      if (evento.key === "Escape") {
+        evento.preventDefault();
+        evento.stopPropagation();
+        cancelarEdicaoTarefa();
+      }
+    });
+
+    form.addEventListener("submit", function (evento) {
+      evento.preventDefault();
+      var texto = inputTexto.value.trim();
+      if (!texto) {
+        inputTexto.focus();
+        return;
+      }
+      var responsavelId = selectResp.value;
+      tarefa.texto = texto;
+      tarefa.responsavelId = responsavelId;
+      tarefaEmEdicaoId = null;
+      renderTarefas();
+      inputTarefaTexto.focus();
+      escrever(function () {
+        return Dados.atualizarTarefa(tarefa.id, { texto: texto, responsavelId: responsavelId });
+      });
+    });
+
+    item.appendChild(form);
+    return item;
+  }
+
   function renderTarefas() {
     if (!trabalhoTarefasAtual) return;
     var trabalho = trabalhoTarefasAtual;
     var tarefas = trabalho.tarefas || [];
+
+    if (tarefaEmEdicaoId && !tarefas.some(function (t) { return t.id === tarefaEmEdicaoId; })) {
+      tarefaEmEdicaoId = null;   // a tarefa foi apagada por outro integrante
+    }
+    var tinhaFoco = !!document.activeElement && document.activeElement.id === ID_EDITAR_TEXTO;
+
     listaTarefas.innerHTML = "";
     tarefasVazio.hidden = tarefas.length !== 0;
     atualizarAnelTarefas();
 
     tarefas.forEach(function (tarefa) {
+      if (tarefa.id === tarefaEmEdicaoId) {
+        listaTarefas.appendChild(montarEdicaoTarefa(trabalho, tarefa));
+        return;
+      }
+
       var item = document.createElement("li");
       item.className = "tarefa-item" + (tarefa.feito ? " tarefa-feita" : "");
       var salvando = ehTemporario(tarefa);
@@ -1114,6 +1233,21 @@
         item.appendChild(responsavelSpan);
       }
 
+      var botaoEditarTarefa = document.createElement("button");
+      botaoEditarTarefa.type = "button";
+      botaoEditarTarefa.className = "botao botao-texto tarefa-editar";
+      botaoEditarTarefa.textContent = "Editar";
+      botaoEditarTarefa.disabled = salvando;
+      botaoEditarTarefa.setAttribute("aria-label", "Editar a tarefa '" + tarefa.texto + "'");
+      botaoEditarTarefa.addEventListener("click", function () {
+        tarefaEmEdicaoId = tarefa.id;
+        rascunhoTexto = tarefa.texto;
+        rascunhoResponsavel = tarefa.responsavelId || "";
+        focoPendenteEdicao = true;
+        renderTarefas();
+      });
+      item.appendChild(botaoEditarTarefa);
+
       var botaoExcluirTarefa = document.createElement("button");
       botaoExcluirTarefa.type = "button";
       botaoExcluirTarefa.className = "botao botao-texto tarefa-excluir";
@@ -1134,6 +1268,14 @@
 
       listaTarefas.appendChild(item);
     });
+
+    var campoEdicao = document.getElementById(ID_EDITAR_TEXTO);
+    if (campoEdicao && (tinhaFoco || focoPendenteEdicao)) {
+      focoPendenteEdicao = false;
+      campoEdicao.focus();
+      var fim = campoEdicao.value.length;
+      campoEdicao.setSelectionRange(fim, fim);
+    }
   }
 
   formTarefa.addEventListener("submit", function (evento) {
@@ -1170,6 +1312,7 @@
 
   dialogTarefas.addEventListener("close", function () {
     trabalhoTarefasAtual = null;
+    tarefaEmEdicaoId = null;
   });
 
   /* ---------------- entrar em um trabalho com código ---------------- */

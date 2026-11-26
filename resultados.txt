@@ -1,5 +1,5 @@
 Resultados dos testes automatizados do Combinado
-Data da execução: 26/11/2026 15:14 (UTC)
+Data da execução: 26/11/2026 15:32 (UTC)
 Ferramenta: Playwright (Chromium headless), app servido localmente em http://localhost:8799, com o Supabase de mentira (testes/fake_supabase.js)
 
 ================ testes/contas_grupos.js ================
@@ -36,6 +36,17 @@ OK   - integrante vê o mesmo código do grupo
 OK   - integrante não vê "Trocar código" nem "×" de remover, vê "Sair deste trabalho"
 OK   - Bia criou a tarefa com ela de responsável
 OK   - Ana recebe a tarefa ao vivo, com a Bia de responsável
+OK   - Editar abre o campo da tarefa já preenchido e com o foco
+OK   - a edição oferece o responsável atual (Bia) selecionado
+OK   - Cancelar mantém a tarefa como estava
+OK   - Esc cancela só a edição e não fecha a janela de tarefas
+OK   - texto vazio não salva e a edição continua aberta
+OK   - salvar atualiza o texto e o responsável na tela da Ana
+OK   - a Bia vê a edição ao vivo (texto e responsável)
+OK   - chegou a tarefa nova da Bia na lista da Ana
+OK   - o rascunho da edição continua intacto e com o foco
+OK   - Ana apaga a tarefa extra; sobra só a primeira
+OK   - responsável devolvido para a Bia
 OK   - Ana concluiu: anel mostra 1/1
 OK   - Bia vê a tarefa concluída ao vivo
 OK   - status do card virou Pronto para a Bia (regra automática, gravada no servidor)
@@ -66,7 +77,7 @@ OK   - na próxima entrada não pergunta de novo
 OK   - "Não importar" não traz nada para a conta
 OK   - e não pergunta de novo depois de recarregar
 OK   - sem a biblioteca do Supabase: tela de login mostra aviso claro
---- total de checagens: 63 | erros de console: 0
+--- total de checagens: 74 | erros de console: 0
 
 ================ testes/login.js ================
 --- carga inicial: tela de login visível, app escondido ---

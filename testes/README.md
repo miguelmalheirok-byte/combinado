@@ -10,7 +10,7 @@ Os roteiros do app rodam contra um Supabase de mentira (`fake_supabase.js`), que
 
 | Arquivo | O que confere |
 |---|---|
-| `contas_grupos.js` | Login e cadastro de verdade (mensagens de erro, sessão ao recarregar, confirmação de e-mail ligada), grupo com código, duas pessoas ao mesmo tempo com atualização ao vivo, troca de código, remover integrante, sair, excluir, queda de internet e importação dos trabalhos antigos |
+| `contas_grupos.js` | Login e cadastro de verdade (mensagens de erro, sessão ao recarregar, confirmação de e-mail ligada), grupo com código, duas pessoas ao mesmo tempo com atualização ao vivo, editar tarefa (cancelar, Esc, texto vazio, rascunho que sobrevive a atualização de outra pessoa), troca de código, remover integrante, sair, excluir, queda de internet e importação dos trabalhos antigos |
 | `login.js` | Cadastro, login, senha errada, usuário duplicado, sair, dados isolados por conta e login automático ao recarregar |
 | `editar.js` | Edição de trabalho, cancelar sem alterar nada e persistência depois de recarregar |
 | `completo.js` | Fluxo geral: criar, mudar status, editar, excluir com confirmação e acessibilidade básica |
