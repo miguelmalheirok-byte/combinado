@@ -986,6 +986,10 @@ dialog h2 {
 }
 
 .faixa-aviso {
+  position: sticky;
+  top: 8px;
+  z-index: 5;
+  box-shadow: 0 3px 0 rgba(30, 27, 75, 0.9);
   margin: 0;
   padding: 10px 14px;
   border: var(--borda);

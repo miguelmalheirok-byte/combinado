@@ -72,6 +72,19 @@ const { abrirNavegador, novoContexto, vigiar, calmo, cadastrar, novoTrabalho, co
   check('o aviso de alterações desfeitas fica alguns segundos', await faixa.isVisible());
   await flag(page, 'offline', null);
 
+  /* ---------- a rede volta: o app confere na hora (sinal "online" do celular) e o aviso fica 30 s ---------- */
+  await flag(page, 'offline', '1');
+  await card.locator('select').selectOption('pronto');
+  await ate(page, () => /serão desfeitas/.test(document.getElementById('faixa-aviso').textContent), null, 6000);
+  await flag(page, 'offline', '0');
+  await page.evaluate(() => window.dispatchEvent(new Event('online')));
+  check('evento "online" faz o app conferir na hora (menos de 2 s, sem esperar os 4 s)', await ate(page, () => /foram desfeitas/.test(document.getElementById('faixa-aviso').textContent), null, 2000));
+  await dormir(14000);
+  check('o aviso de alterações desfeitas continua na tela depois de 14 s (dura 30 s)', await faixa.isVisible() && /foram desfeitas/.test(await faixa.textContent()));
+  check('a faixa de aviso fica presa no topo (aparece mesmo com a lista rolada)', (await faixa.evaluate((f) => getComputedStyle(f).position)) === 'sticky');
+  await flag(page, 'offline', null);
+  await calmo(page);
+
   /* ---------- sem alterações perdidas: aviso de conexão some sozinho ---------- */
   await flag(page, 'offline', '1');
   await page.evaluate(() => document.dispatchEvent(new Event('visibilitychange')));

@@ -270,7 +270,7 @@
       if (tipoAviso === "conexao") esconderAviso();
       if (houveFalhaDeRede) {
         houveFalhaDeRede = false;
-        mostrarAviso("Algumas alterações feitas sem conexão não foram salvas e foram desfeitas. Confira a lista e refaça o que faltar.", false, "", 12000);
+        mostrarAviso("Algumas alterações feitas sem conexão não foram salvas e foram desfeitas. Confira a lista e refaça o que faltar.", false, "", 30000);
       }
       depoisDeCarregar();
     }).catch(function (e) {
@@ -370,6 +370,11 @@
 
   document.addEventListener("visibilitychange", function () {
     if (!document.hidden && usuarioAtual) agendarRecarga(0);
+  });
+
+  // O celular avisa quando a rede volta: confere com o servidor na hora, sem esperar o relógio de 4 s.
+  window.addEventListener("online", function () {
+    if (usuarioAtual) agendarRecarga(0);
   });
 
   /* ---------------- tema claro / escuro ---------------- */

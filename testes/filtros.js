@@ -82,6 +82,7 @@ const { paginaComFake, novoContexto, calmo, cadastrar, entrar, novoTrabalho } = 
   check('materia sem nenhum trabalho some da lista de filtro', !opcoesMateriaDepois.includes('Sistemas Distribuidos'));
 
   // reload: preferencia de ordenacao/filtro nao precisa persistir, mas trabalhos restantes sim
+  await calmo(page);
   await page.reload();
   await page.waitForSelector('#app-principal:not([hidden])');
   await calmo(page);

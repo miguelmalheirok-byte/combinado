@@ -1,5 +1,5 @@
 Resultados dos testes automatizados do Combinado
-Data da execução: 26/11/2026 17:12 (UTC)
+Data da execução: 26/11/2026 18:48 (UTC)
 Ferramenta: Playwright (Chromium headless), app servido localmente em http://localhost:8799, com o Supabase de mentira (testes/fake_supabase.js)
 
 ================ testes/melhorias_8_a_15.js ================
@@ -50,6 +50,9 @@ OK   - offline: não promete mais "vamos tentar de novo" para a alteração perd
 OK   - ao voltar a conexão: avisa que as alterações foram desfeitas
 OK   - ao voltar a conexão: o status voltou ao valor salvo
 OK   - o aviso de alterações desfeitas fica alguns segundos
+OK   - evento "online" faz o app conferir na hora (menos de 2 s, sem esperar os 4 s)
+OK   - o aviso de alterações desfeitas continua na tela depois de 14 s (dura 30 s)
+OK   - a faixa de aviso fica presa no topo (aparece mesmo com a lista rolada)
 OK   - só carga offline: aparece "Sem conexão com o servidor"
 OK   - com a rede de volta, o aviso de conexão some sozinho
 OK   - faixa dentro da janela de Tarefas começa escondida
